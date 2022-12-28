@@ -1,23 +1,21 @@
+// express
 const express = require("express")
-const cors = require("cors")
-const bodyParser = require("body-parser")
-const cookieParser = require("cookie-parser")
-const passport = require("./passport");
-const session = require("express-session")
-const SQLiteStore = require("connect-sqlite3")(session);
+const app = express()
 
+// .env
 if (process.env.NODE_ENV !== "production") {
   // Load environment variables from .env file in non prod environments
   require("dotenv").config()
 }
 
-const app = express()
-
 // parsers
+const bodyParser = require("body-parser")
+const cookieParser = require("cookie-parser")
 app.use(bodyParser.json())
 app.use(cookieParser(process.env.COOKIE_SECRET))
 
 // add the client URL to the CORS policy
+const cors = require("cors")
 const whitelist = process.env.WHITELISTED_DOMAINS ? process.env.WHITELISTED_DOMAINS.split(",") : []
 const corsOptions = {
   origin: function (origin, callback) {
@@ -33,6 +31,8 @@ const corsOptions = {
 app.use(cors(corsOptions))
 
 // session
+const session = require("express-session")
+const SQLiteStore = require("connect-sqlite3")(session);
 app.use(session({
   store: new SQLiteStore({ db: 'the-form', dir: './db' }),
   secret: process.env.SESSION_SECRET,
@@ -40,6 +40,9 @@ app.use(session({
   saveUninitialized: false,
   cookie: { secure: true }
 }))
+
+// passport
+const passport = require("./passport");
 app.use(passport.initialize())
 app.use(passport.session())
 
