@@ -116,8 +116,6 @@ router.post("/refreshToken", (req, res, next) => {
   });
 })
 router.get("/logout", verifyUser, (req, res, next) => {
-  const { signedCookies = {} } = req
-  const { refreshToken } = signedCookies
   const userId = req.user.id
   db.get('SELECT * FROM users WHERE id = ?', userId, (err, user, next) => {
     if (err) next(err);
