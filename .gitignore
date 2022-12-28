@@ -9,6 +9,11 @@
 .env.production.local
 
 # misc
+.env
 .idea
 .DS_Store
-db.db
+yarn.lock
+yarn-error.log
+package-lock.json
+db/the-form
+
