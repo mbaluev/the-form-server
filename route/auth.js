@@ -54,10 +54,11 @@ router.post('/signup', (req, res) => {
     username,
     active: req.body.active || false,
     paid: req.body.paid || false,
+    admin: req.body.admin || false,
     refreshToken
   };
-  const query = 'INSERT INTO users (id, username, password, salt, active, paid, refreshToken) VALUES (?,?,?,?,?,?,?)'
-  const params = [data.id, data.username, password, salt, data.active, data.paid, data.refreshToken];
+  const query = 'INSERT INTO users (id, username, password, salt, active, paid, admin, refreshToken) VALUES (?,?,?,?,?,?,?,?)'
+  const params = [data.id, data.username, password, salt, data.active, data.paid, data.admin, data.refreshToken];
   db.run(query, params, function (err, result) {
     if (err) {
       res.status(500).send({

@@ -10,6 +10,7 @@ db.serialize(() => {
     salt BLOB NOT NULL, \
     active INTEGER NOT NULL, \
     paid INTEGER NOT NULL, \
+    admin INTEGER NOT NULL, \
     refreshToken TEXT \
   )");
 
@@ -23,8 +24,8 @@ db.serialize(() => {
   // const username = 'alice';
   // const salt = crypto.randomBytes(16).toString('hex');
   // const password = cryptoPass(salt, 'letmein');
-  // db.run('INSERT OR IGNORE INTO users (id, username, password, salt, active, paid) VALUES (?, ?, ?, ?, ?, ?)',
-  //   [guid(), username, password, salt, 1, 0]
+  // db.run('INSERT OR IGNORE INTO users (id, username, password, salt, active, paid, admin) VALUES (?,?,?,?,?,?,?)',
+  //   [guid(), username, password, salt, 1, 0, 0]
   // );
 });
 

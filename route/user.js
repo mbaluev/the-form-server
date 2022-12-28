@@ -9,7 +9,7 @@ const { verifyUser } = require("../passport/auth")
 
 router.get("/list", (req, res, next) => {
   const search = req.body.search || '';
-  const query = "SELECT id, username, active, paid FROM users WHERE username LIKE ?"
+  const query = "SELECT id, username, active, paid, admin FROM users WHERE username LIKE ?"
   const params = ['%' + search + '%'];
   db.all(query, params, (err, rows) => {
     if (err) {
@@ -26,7 +26,7 @@ router.get("/list", (req, res, next) => {
   });
 });
 router.get("/get/:id", (req, res, next) => {
-  const query = "select id, username, active, paid from users where id = ?"
+  const query = "select id, username, active, paid, admin from users where id = ?"
   const params = [req.params.id]
   db.get(query, params, (err, row) => {
     if (err) {
@@ -64,10 +64,11 @@ router.post("/create", (req, res, next) => {
     id: guid(),
     username,
     active: req.body.active || false,
-    paid: req.body.paid || false
+    paid: req.body.paid || false,
+    admin: req.body.admin || false
   };
-  const query ='INSERT INTO users (id, username, password, salt, active, paid) VALUES (?,?,?,?,?,?)'
-  const params = [data.id, data.username, password, salt, data.active, data.paid];
+  const query ='INSERT INTO users (id, username, password, salt, active, paid, admin) VALUES (?,?,?,?,?,?,?)'
+  const params = [data.id, data.username, password, salt, data.active, data.paid, data.admin];
   db.run(query, params, function (err, result) {
     if (err){
       res.status(400).json({
@@ -85,17 +86,19 @@ router.post("/create", (req, res, next) => {
 router.patch("/update/:id", (req, res, next) => {
   const username = req.body.username;
   const data = {
+    id: req.params.id,
     username,
     active: req.body.active,
     paid: req.body.paid,
-    id: req.params.id
+    admin: req.body.admin
   };
   db.run(`UPDATE users set 
            username = COALESCE(?,username), 
            active = COALESCE(?,active),
-           paid = COALESCE(?,paid)
+           paid = COALESCE(?,paid),
+           admin = COALESCE(?,admin)
            WHERE id = ?`,
-    [data.username, data.active, data.paid, data.id],
+    [data.username, data.active, data.paid, data.admin, data.id],
     function (err, result) {
       if (err){
         res.status(400).json({
