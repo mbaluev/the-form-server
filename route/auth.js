@@ -12,20 +12,36 @@ const { v4: guid } = require("uuid");
 router.post('/login',
   passport.authenticate('local'), (req, res, next) => {
     const id = req.user.id;
-    const token = getToken({ id })
-    const refreshToken = getRefreshToken({ id })
-    const query = 'UPDATE users set refreshToken = COALESCE(?,refreshToken) WHERE id = ?'
-    const params = [refreshToken, id];
-    db.run(query, params, (err, result) => {
+    db.get('SELECT * FROM users WHERE id = ?', id, (err, user) => {
       if (err) {
-        res.status(500).send({
+        res.status(500)
+        res.send({
           success: false,
           message: err.message
         })
         return;
       }
-      res.cookie("refreshToken", refreshToken, COOKIE_OPTIONS)
-      res.send({ success: true, token })
+      if (!user) {
+        res.statusCode = 401
+        res.send("Unauthorized")
+        return;
+      }
+      const token = getToken({ id, admin: Boolean(user.admin) })
+      const refreshToken = getRefreshToken({ id })
+      const query = 'UPDATE users set refreshToken = COALESCE(?,refreshToken) WHERE id = ?'
+      const params = [refreshToken, id];
+      db.run(query, params, (err, result) => {
+        if (err) {
+          res.status(500)
+          res.send({
+            success: false,
+            message: err.message
+          })
+          return;
+        }
+        res.cookie("refreshToken", refreshToken, COOKIE_OPTIONS)
+        res.send({ success: true, token })
+      });
     });
   });
 router.post('/signup', (req, res) => {
@@ -47,14 +63,15 @@ router.post('/signup', (req, res) => {
   const salt = crypto.randomBytes(16).toString('hex');
   const password = cryptoPass(salt, req.body.password);
   const id = guid();
-  const token = getToken({ id })
+  const admin = req.body.admin || false;
+  const token = getToken({ id, admin: Boolean(admin) })
   const refreshToken = getRefreshToken({ id })
   const data = {
     id,
     username,
     active: req.body.active || false,
     paid: req.body.paid || false,
-    admin: req.body.admin || false,
+    admin,
     refreshToken
   };
   const query = 'INSERT INTO users (id, username, password, salt, active, paid, admin, refreshToken) VALUES (?,?,?,?,?,?,?,?)'
@@ -97,7 +114,7 @@ router.post("/refreshToken", (req, res, next) => {
       res.send("Unauthorized")
       return;
     }
-    const token = getToken({ id: userId })
+    const token = getToken({ id: userId, admin: Boolean(user.admin) })
     // If the refresh token exists, then create new one and replace it.
     const newRefreshToken = getRefreshToken({ id: userId })
     const query = 'UPDATE users set refreshToken = COALESCE(?,refreshToken) WHERE id = ?'

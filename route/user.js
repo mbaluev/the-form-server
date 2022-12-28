@@ -5,9 +5,9 @@ const db = require("../db/utils/init")
 const crypto = require("crypto");
 const cryptoPass = require("../db/utils/cryptoPass");
 const { v4: guid } = require("uuid");
-const { verifyUser } = require("../passport/auth")
+const { verifyUser, verifyAdmin } = require("../passport/auth")
 
-router.get("/list", (req, res, next) => {
+router.get("/list", verifyAdmin, (req, res, next) => {
   const search = req.body.search || '';
   const query = "SELECT id, username, active, paid, admin FROM users WHERE username LIKE ?"
   const params = ['%' + search + '%'];
@@ -25,7 +25,7 @@ router.get("/list", (req, res, next) => {
     })
   });
 });
-router.get("/get/:id", (req, res, next) => {
+router.get("/get/:id", verifyAdmin, (req, res, next) => {
   const query = "select id, username, active, paid, admin from users where id = ?"
   const params = [req.params.id]
   db.get(query, params, (err, row) => {
@@ -42,7 +42,7 @@ router.get("/get/:id", (req, res, next) => {
     })
   });
 });
-router.post("/create", (req, res, next) => {
+router.post("/create", verifyAdmin, (req, res, next) => {
   const errors = []
   if (!req.body.password){
     errors.push("No password specified");
@@ -83,7 +83,7 @@ router.post("/create", (req, res, next) => {
     })
   });
 });
-router.patch("/update/:id", (req, res, next) => {
+router.patch("/update/:id", verifyAdmin, (req, res, next) => {
   const username = req.body.username;
   const data = {
     id: req.params.id,
@@ -114,7 +114,7 @@ router.patch("/update/:id", (req, res, next) => {
       })
     });
 })
-router.delete("/delete", (req, res, next) => {
+router.delete("/delete", verifyAdmin, (req, res, next) => {
   const ids = req.body.ids.join(',');
   db.run('DELETE FROM users WHERE id IN (?)', ids, function (err, result) {
     if (err){

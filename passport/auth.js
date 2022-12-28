@@ -25,3 +25,5 @@ exports.getRefreshToken = user => {
 }
 
 exports.verifyUser = passport.authenticate('jwt', { session: false })
+
+exports.verifyAdmin = passport.authenticate('jwt-admin', { session: false })
