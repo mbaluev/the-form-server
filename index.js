@@ -25,7 +25,6 @@ const corsOptions = {
       callback(new Error("Not allowed by CORS"))
     }
   },
-
   credentials: true,
 }
 app.use(cors(corsOptions))
@@ -36,9 +35,9 @@ const SQLiteStore = require("connect-sqlite3")(session);
 app.use(session({
   store: new SQLiteStore({ db: 'the-form', dir: './db' }),
   secret: process.env.SESSION_SECRET,
-  resave: true,
+  resave: false,
   saveUninitialized: false,
-  cookie: { secure: true }
+  cookie: { secure: true, sameSite: 'none' }
 }))
 
 // passport

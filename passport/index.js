@@ -2,8 +2,9 @@ const passport = require('passport');
 const db = require("../db/utils/init")
 
 const localStrategy = require('./strategy/local');
-const jwtStrategy = require('./strategy/jwt');
+const jwtUserStrategy = require('./strategy/jwt-user');
 const jwtAdminStrategy = require('./strategy/jwt-admin');
+const jwtStudentStrategy = require('./strategy/jwt-student');
 
 passport.serializeUser((user, done) => {
   return done(null, user.id);
@@ -17,7 +18,8 @@ passport.deserializeUser((id, done) => {
 });
 
 passport.use('local', localStrategy);
-passport.use('jwt', jwtStrategy);
+passport.use('jwt-user', jwtUserStrategy);
 passport.use('jwt-admin', jwtAdminStrategy);
+passport.use('jwt-student', jwtStudentStrategy);
 
 module.exports = passport;

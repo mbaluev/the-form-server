@@ -4,16 +4,19 @@ const dev = process.env.NODE_ENV !== "production"
 
 exports.COOKIE_OPTIONS = {
   httpOnly: true,
-  // Since localhost is not having https protocol,
-  // secure cookies do not work correctly (in postman)
-  secure: !dev,
+  // Since localhost is not having https protocol, secure cookies do not work correctly (in postman)
   signed: true,
   maxAge: eval(process.env.REFRESH_TOKEN_EXPIRY) * 1000,
+  secure: true,
   sameSite: "none",
 }
 
 exports.getToken = user => {
-  return jwt.sign(user, process.env.JWT_SECRET, {
+  const roles = ['user'];
+  if (user.admin) roles.push('admin');
+  if (user.active && user.paid) roles.push('student');
+  const obj = { id: user.id, roles, username: user.username };
+  return jwt.sign(obj, process.env.JWT_SECRET, {
     expiresIn: eval(process.env.SESSION_EXPIRY),
   })
 }
@@ -24,6 +27,8 @@ exports.getRefreshToken = user => {
   })
 }
 
-exports.verifyUser = passport.authenticate('jwt', { session: false })
+exports.verifyUser = passport.authenticate('jwt-user', { session: false })
+
+exports.verifyStudent = passport.authenticate('jwt-student', { session: false })
 
 exports.verifyAdmin = passport.authenticate('jwt-admin', { session: false })

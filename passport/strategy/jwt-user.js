@@ -10,7 +10,9 @@ opts.secretOrKey = process.env.JWT_SECRET
 // i.e., to fetch user details from the JWT.
 module.exports = new JwtStrategy(opts, function (jwt_payload, done) {
   const id = jwt_payload.id;
-  db.get('SELECT * FROM users WHERE id = ?', id, function(err, user) {
+  const query = "select id, username, active, paid, admin from users where id = ?"
+  const params = [id];
+  db.get(query, params, function(err, user) {
     if (err) return done(err, false);
     if (!user) return done(null, false);
     return done(null, user);

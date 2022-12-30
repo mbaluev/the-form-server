@@ -12,7 +12,7 @@ const { v4: guid } = require("uuid");
 router.post('/login',
   passport.authenticate('local'), (req, res, next) => {
     const id = req.user.id;
-    db.get('SELECT * FROM users WHERE id = ?', id, (err, user) => {
+    db.get('SELECT id, username, active, paid, admin FROM users WHERE id = ?', id, (err, user) => {
       if (err) {
         res.status(500)
         res.send({
@@ -26,7 +26,11 @@ router.post('/login',
         res.send("Unauthorized")
         return;
       }
-      const token = getToken({ id, admin: Boolean(user.admin) })
+      const active = Boolean(user.active);
+      const paid = Boolean(user.paid);
+      const admin = Boolean(user.admin);
+      const username = user.username;
+      const token = getToken({ id, active, paid, admin, username });
       const refreshToken = getRefreshToken({ id })
       const query = 'UPDATE users set refreshToken = COALESCE(?,refreshToken) WHERE id = ?'
       const params = [refreshToken, id];
@@ -59,18 +63,20 @@ router.post('/signup', (req, res) => {
     })
     return;
   }
-  const username = req.body.username;
+  const id = guid();
   const salt = crypto.randomBytes(16).toString('hex');
   const password = cryptoPass(salt, req.body.password);
-  const id = guid();
-  const admin = req.body.admin || false;
-  const token = getToken({ id, admin: Boolean(admin) })
+  const username = req.body.username;
+  const active = Boolean(req.body.active) || false;
+  const paid = Boolean(req.body.paid) || false;
+  const admin = Boolean(req.body.admin) || false;
+  const token = getToken({ id, active, paid, admin, username })
   const refreshToken = getRefreshToken({ id })
   const data = {
     id,
     username,
-    active: req.body.active || false,
-    paid: req.body.paid || false,
+    active,
+    paid,
     admin,
     refreshToken
   };
@@ -97,8 +103,8 @@ router.post("/refreshToken", (req, res, next) => {
     return;
   }
   const payload = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET)
-  const userId = payload.id
-  db.get('SELECT * FROM users WHERE id = ?', userId, (err, user) => {
+  const id = payload.id
+  db.get('SELECT id, username, active, paid, admin, refreshToken FROM users WHERE id = ?', id, (err, user) => {
     if (err) {
       res.statusCode = 401
       res.send("Unauthorized")
@@ -114,11 +120,15 @@ router.post("/refreshToken", (req, res, next) => {
       res.send("Unauthorized")
       return;
     }
-    const token = getToken({ id: userId, admin: Boolean(user.admin) })
+    const active = Boolean(user.active);
+    const paid = Boolean(user.paid);
+    const admin = Boolean(user.admin);
+    const username = user.username;
+    const token = getToken({ id, active, paid, admin, username });
     // If the refresh token exists, then create new one and replace it.
-    const newRefreshToken = getRefreshToken({ id: userId })
+    const newRefreshToken = getRefreshToken({ id })
     const query = 'UPDATE users set refreshToken = COALESCE(?,refreshToken) WHERE id = ?'
-    const params = [newRefreshToken, userId];
+    const params = [newRefreshToken, id];
     db.run(query, params, (err, result) => {
       if (err) {
         res.status(500)

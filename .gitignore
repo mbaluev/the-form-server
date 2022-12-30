@@ -9,7 +9,6 @@
 .env.production.local
 
 # misc
-.env
 .idea
 .DS_Store
 yarn.lock
