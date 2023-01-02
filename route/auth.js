@@ -143,6 +143,41 @@ router.post("/refreshToken", (req, res, next) => {
     });
   });
 })
+router.post("/token", (req, res, next) => {
+  const { signedCookies = {} } = req
+  const { refreshToken } = signedCookies
+  if (!refreshToken) {
+    res.statusCode = 401
+    res.send("Unauthorized")
+    return;
+  }
+  const payload = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET)
+  const id = payload.id
+  db.get('SELECT id, username, active, paid, admin, refreshToken FROM users WHERE id = ?', id, (err, user) => {
+    if (err) {
+      res.statusCode = 401
+      res.send("Unauthorized")
+      return;
+    }
+    if (!user) {
+      res.statusCode = 401
+      res.send("Unauthorized")
+      return;
+    }
+    if (refreshToken !== user.refreshToken) {
+      res.statusCode = 401
+      res.send("Unauthorized")
+      return;
+    }
+    const active = Boolean(user.active);
+    const paid = Boolean(user.paid);
+    const admin = Boolean(user.admin);
+    const username = user.username;
+    const token = getToken({ id, active, paid, admin, username });
+    res.cookie("refreshToken", refreshToken, COOKIE_OPTIONS)
+    res.send({ success: true, token })
+  });
+})
 router.get("/logout", verifyUser, (req, res, next) => {
   const userId = req.user.id
   db.get('SELECT * FROM users WHERE id = ?', userId, (err, user, next) => {
