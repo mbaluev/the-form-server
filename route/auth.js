@@ -80,8 +80,6 @@ router.post('/signup', (req, res) => {
   const active = Boolean(req.body.active) || false;
   const paid = Boolean(req.body.paid) || false;
   const admin = Boolean(req.body.admin) || false;
-  const token = getToken({ id, active, paid, admin, username })
-  const refreshToken = getRefreshToken({ id })
   const data = {
     id,
     firstname,
@@ -90,10 +88,9 @@ router.post('/signup', (req, res) => {
     active,
     paid,
     admin,
-    refreshToken
   };
-  const query = 'INSERT INTO users (id, firstname, lastname, username, password, salt, active, paid, admin, refreshToken) VALUES (?,?,?,?,?,?,?,?,?,?)'
-  const params = [data.id, data.firstname, data.lastname, data.username, password, salt, data.active, data.paid, data.admin, data.refreshToken];
+  const query = 'INSERT INTO users (id, firstname, lastname, username, password, salt, active, paid, admin) VALUES (?,?,?,?,?,?,?,?,?)'
+  const params = [data.id, data.firstname, data.lastname, data.username, password, salt, data.active, data.paid, data.admin];
   db.run(query, params, function (err, result) {
     if (err) {
       res.status(500).send({
@@ -102,8 +99,7 @@ router.post('/signup', (req, res) => {
       })
       return;
     }
-    res.cookie("refreshToken", refreshToken, COOKIE_OPTIONS)
-    res.send({ success: true, token })
+    res.send({ success: true })
   });
 });
 router.post("/refreshToken", (req, res, next) => {
