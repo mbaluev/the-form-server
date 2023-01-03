@@ -5,6 +5,8 @@ const db = connect();
 db.serialize(() => {
   db.run("CREATE TABLE IF NOT EXISTS users ( \
     id TEXT PRIMARY KEY, \
+    firstname TEXT NOT NULL, \
+    lastname TEXT NOT NULL, \
     username TEXT UNIQUE NOT NULL, \
     password BLOB NOT NULL, \
     salt BLOB NOT NULL, \

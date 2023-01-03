@@ -10,7 +10,7 @@ passport.serializeUser((user, done) => {
   return done(null, user.id);
 });
 passport.deserializeUser((id, done) => {
-  db.get('SELECT id, username, active, paid, admin FROM users WHERE id = ?', id, (err, user) => {
+  db.get('SELECT id, firstname, lastname, username, active, paid, admin FROM users WHERE id = ?', id, (err, user) => {
     if (err) return done(err);
     if (!user) return done(null, false);
     return done(null, user);

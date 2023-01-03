@@ -15,7 +15,13 @@ exports.getToken = user => {
   const roles = ['user'];
   if (user.admin) roles.push('admin');
   if (user.active && user.paid) roles.push('student');
-  const obj = { id: user.id, roles, username: user.username };
+  const obj = {
+    id: user.id,
+    firstname: user.firstname,
+    lastname: user.lastname,
+    username: user.username,
+    roles
+  };
   return jwt.sign(obj, process.env.JWT_SECRET, {
     expiresIn: eval(process.env.SESSION_EXPIRY),
   })

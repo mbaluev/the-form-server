@@ -9,7 +9,7 @@ const { verifyUser, verifyAdmin } = require("../passport/auth")
 
 router.get("/list", verifyAdmin, (req, res, next) => {
   const search = req.body.search || '';
-  const query = "SELECT id, username, active, paid, admin FROM users WHERE username LIKE ?"
+  const query = "SELECT id, firstname, lastname, username, active, paid, admin FROM users WHERE username LIKE ?"
   const params = ['%' + search + '%'];
   db.all(query, params, (err, rows) => {
     if (err) {
@@ -26,7 +26,7 @@ router.get("/list", verifyAdmin, (req, res, next) => {
   });
 });
 router.get("/get/:id", verifyAdmin, (req, res, next) => {
-  const query = "select id, username, active, paid, admin from users where id = ?"
+  const query = "select id, firstname, lastname, username, active, paid, admin from users where id = ?"
   const params = [req.params.id]
   db.get(query, params, (err, row) => {
     if (err) {
@@ -44,11 +44,17 @@ router.get("/get/:id", verifyAdmin, (req, res, next) => {
 });
 router.post("/create", verifyAdmin, (req, res, next) => {
   const errors = []
-  if (!req.body.password){
-    errors.push("No password specified");
+  if (!req.body.firstname){
+    errors.push("No firstname specified");
+  }
+  if (!req.body.lastname){
+    errors.push("No lastname specified");
   }
   if (!req.body.username){
     errors.push("No username specified");
+  }
+  if (!req.body.password){
+    errors.push("No password specified");
   }
   if (errors.length){
     res.status(400).json({
@@ -57,18 +63,19 @@ router.post("/create", verifyAdmin, (req, res, next) => {
     })
     return;
   }
-  const username = req.body.username;
   const salt = crypto.randomBytes(16).toString('hex');
   const password = cryptoPass(salt, req.body.password);
   const data = {
     id: guid(),
-    username,
+    firstname: req.body.firstname,
+    lastname: req.body.lastname,
+    username: req.body.username,
     active: req.body.active || false,
     paid: req.body.paid || false,
     admin: req.body.admin || false
   };
-  const query ='INSERT INTO users (id, username, password, salt, active, paid, admin) VALUES (?,?,?,?,?,?,?)'
-  const params = [data.id, data.username, password, salt, data.active, data.paid, data.admin];
+  const query ='INSERT INTO users (id, firstname, lastname, username, password, salt, active, paid, admin) VALUES (?,?,?,?,?,?,?,?,?)'
+  const params = [data.id, data.firstname, data.lastname, data.username, password, salt, data.active, data.paid, data.admin];
   db.run(query, params, function (err, result) {
     if (err){
       res.status(400).json({
@@ -84,21 +91,24 @@ router.post("/create", verifyAdmin, (req, res, next) => {
   });
 });
 router.patch("/update/:id", verifyAdmin, (req, res, next) => {
-  const username = req.body.username;
   const data = {
     id: req.params.id,
-    username,
+    firstname: req.body.firstname,
+    lastname: req.body.lastname,
+    username: req.body.username,
     active: req.body.active,
     paid: req.body.paid,
     admin: req.body.admin
   };
   db.run(`UPDATE users set 
+           firstname = COALESCE(?,firstname), 
+           lastname = COALESCE(?,lastname), 
            username = COALESCE(?,username), 
            active = COALESCE(?,active),
            paid = COALESCE(?,paid),
            admin = COALESCE(?,admin)
            WHERE id = ?`,
-    [data.username, data.active, data.paid, data.admin, data.id],
+    [data.username, data.firstname, data.lastname, data.active, data.paid, data.admin, data.id],
     function (err, result) {
       if (err){
         res.status(400).json({
