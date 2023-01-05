@@ -9,7 +9,7 @@ const crypto = require("crypto");
 const cryptoPass = require("../db/utils/cryptoPass");
 const { v4: guid } = require("uuid");
 
-router.post('/login',
+router.post('/signin',
   passport.authenticate('local'), (req, res, next) => {
     const id = req.user.id;
     db.get('SELECT id, firstname, lastname, username, active, paid, admin FROM users WHERE id = ?', id, (err, user) => {
@@ -190,7 +190,7 @@ router.post("/token", (req, res, next) => {
     res.send({ success: true, token })
   });
 })
-router.get("/logout", verifyUser, (req, res, next) => {
+router.get("/signout", verifyUser, (req, res, next) => {
   const userId = req.user.id
   db.get('SELECT id FROM users WHERE id = ?', userId, (err, user, next) => {
     if (err) next(err);

@@ -22,6 +22,14 @@ db.serialize(() => {
     name TEXT NOT NULL \
   )");
 
+  db.run("CREATE TABLE IF NOT EXISTS blocks ( \
+    id TEXT PRIMARY KEY, \
+    moduleId TEXT NOT NULL, \
+    title TEXT NOT NULL, \
+    name TEXT NOT NULL, \
+    FOREIGN KEY(moduleId) REFERENCES modules(id)\
+  )");
+
   // create an initial user (username: alice, password: letmein)
   // const username = 'alice';
   // const salt = crypto.randomBytes(16).toString('hex');
