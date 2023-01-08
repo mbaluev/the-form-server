@@ -2,15 +2,18 @@ const express = require("express")
 const router = express.Router()
 const db = require("../db/utils/init")
 
-const crypto = require("crypto");
-const cryptoPass = require("../db/utils/cryptoPass");
 const { v4: guid } = require("uuid");
-const { verifyUser, verifyAdmin } = require("../passport/auth")
+const { verifyAdmin } = require("../passport/auth")
 
 router.get("/list", verifyAdmin, (req, res, next) => {
+  const moduleId = req.body.moduleId || '';
   const search = req.body.search || '';
-  const query = "SELECT id, firstname, lastname, username, active, paid, admin FROM users WHERE username LIKE ?"
-  const params = ['%' + search + '%'];
+  let query = "SELECT id, moduleId, title, name FROM blocks WHERE (title LIKE ? OR name LIKE ?)";
+  const params = ['%' + search + '%', '%' + search + '%'];
+  if (moduleId) {
+    query += " AND moduleId = ?";
+    params.push(moduleId);
+  }
   db.all(query, params, (err, rows) => {
     if (err) {
       res.status(400).json({
@@ -26,7 +29,7 @@ router.get("/list", verifyAdmin, (req, res, next) => {
   });
 });
 router.get("/get/:id", verifyAdmin, (req, res, next) => {
-  const query = "SELECT id, firstname, lastname, username, active, paid, admin FROM users WHERE id = ?"
+  const query = "SELECT id, moduleId, title, name FROM blocks WHERE id = ?"
   const params = [req.params.id]
   db.get(query, params, (err, row) => {
     if (err) {
@@ -44,38 +47,30 @@ router.get("/get/:id", verifyAdmin, (req, res, next) => {
 });
 router.post("/create", verifyAdmin, (req, res, next) => {
   const errors = []
-  if (!req.body.firstname){
-    errors.push("No firstname specified");
+  if (!req.body.moduleId) {
+    errors.push("No moduleId specified");
   }
-  if (!req.body.lastname){
-    errors.push("No lastname specified");
+  if (!req.body.title) {
+    errors.push("No title specified");
   }
-  if (!req.body.username){
-    errors.push("No username specified");
+  if (!req.body.name) {
+    errors.push("No name specified");
   }
-  if (!req.body.password){
-    errors.push("No password specified");
-  }
-  if (errors.length){
+  if (errors.length) {
     res.status(400).json({
       success: false,
       message: errors.join(", ")
     })
     return;
   }
-  const salt = crypto.randomBytes(16).toString('hex');
-  const password = cryptoPass(salt, req.body.password);
   const data = {
     id: guid(),
-    firstname: req.body.firstname,
-    lastname: req.body.lastname,
-    username: req.body.username,
-    active: req.body.active || false,
-    paid: req.body.paid || false,
-    admin: req.body.admin || false
+    moduleId: req.body.moduleId,
+    title: req.body.title,
+    name: req.body.name,
   };
-  const query ='INSERT INTO users (id, firstname, lastname, username, password, salt, active, paid, admin) VALUES (?,?,?,?,?,?,?,?,?)'
-  const params = [data.id, data.firstname, data.lastname, data.username, password, salt, data.active, data.paid, data.admin];
+  const query ='INSERT INTO blocks (id, moduleId, title, name) VALUES (?,?,?,?)'
+  const params = [data.id, data.moduleId, data.title, data.name];
   db.run(query, params, function (err, result) {
     if (err){
       res.status(400).json({
@@ -93,22 +88,16 @@ router.post("/create", verifyAdmin, (req, res, next) => {
 router.patch("/update/:id", verifyAdmin, (req, res, next) => {
   const data = {
     id: req.params.id,
-    firstname: req.body.firstname,
-    lastname: req.body.lastname,
-    username: req.body.username,
-    active: req.body.active,
-    paid: req.body.paid,
-    admin: req.body.admin
+    moduleId: req.body.moduleId,
+    title: req.body.title,
+    name: req.body.name,
   };
-  const query = `UPDATE users set 
-    firstname = COALESCE(?,firstname), 
-    lastname = COALESCE(?,lastname), 
-    username = COALESCE(?,username), 
-    active = COALESCE(?,active),
-    paid = COALESCE(?,paid),
-    admin = COALESCE(?,admin)
+  const query = `UPDATE blocks SET
+    moduleId = COALESCE(?,moduleId), 
+    title = COALESCE(?,title), 
+    name = COALESCE(?,name)
     WHERE id = ?`;
-  const params = [data.username, data.firstname, data.lastname, data.active, data.paid, data.admin, data.id];
+  const params = [data.moduleId, data.title, data.name, data.id];
   db.run(query, params, function (err, result) {
     if (err){
       res.status(400).json({
@@ -125,7 +114,7 @@ router.patch("/update/:id", verifyAdmin, (req, res, next) => {
   });
 })
 router.delete("/delete", verifyAdmin, (req, res, next) => {
-  const query = 'DELETE FROM users WHERE id IN (?)';
+  const query = 'DELETE FROM blocks WHERE id IN (?)';
   const params = req.body.ids.join(',');
   db.run(query, params, function (err, result) {
     if (err){
@@ -140,9 +129,6 @@ router.delete("/delete", verifyAdmin, (req, res, next) => {
       changes: this.changes,
     })
   });
-})
-router.get("/me", verifyUser, (req, res, next) => {
-  res.send(req.user)
 })
 
 module.exports = router

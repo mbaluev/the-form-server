@@ -11,8 +11,9 @@ const { v4: guid } = require("uuid");
 
 router.post('/signin',
   passport.authenticate('local'), (req, res, next) => {
+    const query = 'SELECT id, firstname, lastname, username, active, paid, admin FROM users WHERE id = ?';
     const id = req.user.id;
-    db.get('SELECT id, firstname, lastname, username, active, paid, admin FROM users WHERE id = ?', id, (err, user) => {
+    db.get(query, id, (err, user) => {
       if (err) {
         res.status(500)
         res.send({
@@ -67,7 +68,7 @@ router.post('/signup', (req, res) => {
   if (errors.length) {
     res.status(400).send({
       success: false,
-      message: errors.join(",")
+      message: errors.join(", ")
     })
     return;
   }
@@ -111,8 +112,9 @@ router.post("/refreshToken", (req, res, next) => {
     return;
   }
   const payload = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET)
+  const query = 'SELECT id, firstname, lastname, username, active, paid, admin, refreshToken FROM users WHERE id = ?';
   const id = payload.id
-  db.get('SELECT id, firstname, lastname, username, active, paid, admin, refreshToken FROM users WHERE id = ?', id, (err, user) => {
+  db.get(query, id, (err, user) => {
     if (err) {
       res.statusCode = 401
       res.send("Unauthorized")
@@ -162,8 +164,9 @@ router.post("/token", (req, res, next) => {
     return;
   }
   const payload = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET)
+  const query = 'SELECT id, firstname, lastname, username, active, paid, admin, refreshToken FROM users WHERE id = ?';
   const id = payload.id
-  db.get('SELECT id, firstname, lastname, username, active, paid, admin, refreshToken FROM users WHERE id = ?', id, (err, user) => {
+  db.get(query, id, (err, user) => {
     if (err) {
       res.statusCode = 401
       res.send("Unauthorized")
@@ -191,8 +194,9 @@ router.post("/token", (req, res, next) => {
   });
 })
 router.get("/signout", verifyUser, (req, res, next) => {
+  const query = 'SELECT id FROM users WHERE id = ?';
   const userId = req.user.id
-  db.get('SELECT id FROM users WHERE id = ?', userId, (err, user, next) => {
+  db.get(query, userId, (err, user, next) => {
     if (err) next(err);
     if (!user) next();
     const query = 'UPDATE users set refreshToken = NULL WHERE id = ?'

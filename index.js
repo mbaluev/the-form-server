@@ -48,11 +48,15 @@ app.use(passport.session())
 // routes
 const routerUser = require("./route/user");
 const routerAuth = require("./route/auth");
+const routerModule = require("./route/module");
+const routerBlock = require("./route/block");
 app.get("/", function (req, res) {
   res.json({ success: true })
 })
 app.use('/api/user', routerUser);
 app.use('/api/auth', routerAuth);
+app.use('/api/module', routerModule);
+app.use('/api/block', routerBlock);
 
 // start the server in port 8081
 const server = app.listen(process.env.PORT || 8081, function () {

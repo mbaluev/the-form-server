@@ -1,0 +1,459 @@
+[
+  {
+    "url": "/api/auth/signup",
+    "method": "post",
+    "request": {
+      "body": {
+        "firstname": "string",
+        "lastname": "string",
+        "username": "string",
+        "password": "string"
+      }
+    },
+    "response": {
+      "200": {
+        "success": true,
+        "token": "string"
+      },
+      "error": {
+        "success": false,
+        "message": "string"
+      }
+    }
+  },
+  {
+    "url": "/api/auth/signin",
+    "method": "post",
+    "request": {
+      "body": {
+        "username": "string",
+        "password": "string"
+      }
+    },
+    "response": {
+      "200": {
+        "success": true,
+        "token": "string"
+      },
+      "error": {
+        "success": false,
+        "message": "string"
+      },
+      "cookie": {
+        "refreshToken": "string"
+      }
+    }
+  },
+  {
+    "url": "/api/auth/refreshToken",
+    "method": "post",
+    "request": {
+      "cookie": {
+        "refreshToken": "string"
+      }
+    },
+    "response": {
+      "200": {
+        "success": true,
+        "token": "string"
+      },
+      "error": {
+        "success": false,
+        "message": "string"
+      },
+      "cookie": {
+        "refreshToken": "string"
+      }
+    }
+  },
+  {
+    "url": "/api/auth/token",
+    "method": "post",
+    "request": {
+      "cookie": {
+        "refreshToken": "string"
+      }
+    },
+    "response": {
+      "200": {
+        "success": true,
+        "token": "string"
+      },
+      "error": {
+        "success": false,
+        "message": "string"
+      },
+      "cookie": {
+        "refreshToken": "string"
+      }
+    }
+  },
+  {
+    "url": "/api/auth/signout",
+    "method": "get",
+    "permissions": "user",
+    "request": {
+      "authorization": "bearer"
+    },
+    "response": {
+      "200": {
+        "success": true
+      },
+      "error": {
+        "success": false,
+        "message": "string"
+      }
+    }
+  },
+
+  {
+    "url": "/api/user/list",
+    "method": "get",
+    "permissions": "admin",
+    "request": {
+      "authorization": "bearer",
+      "body": {
+        "search": "string"
+      }
+    },
+    "response": {
+      "200": {
+        "success": true,
+        "data": []
+      },
+      "error": {
+        "success": false,
+        "message": "string"
+      }
+    }
+  },
+  {
+    "url": "/api/user/get/:id",
+    "method": "get",
+    "permissions": "admin",
+    "request": {
+      "authorization": "bearer"
+    },
+    "response": {
+      "200": {
+        "success": true,
+        "data": {}
+      },
+      "error": {
+        "success": false,
+        "message": "string"
+      }
+    }
+  },
+  {
+    "url": "/api/user/create",
+    "method": "post",
+    "permissions": "admin",
+    "request": {
+      "authorization": "bearer",
+      "body": {
+        "firstname": "string",
+        "lastname": "string",
+        "username": "string",
+        "active": "boolean",
+        "paid": "boolean",
+        "admin": "boolean"
+      }
+    },
+    "response": {
+      "200": {
+        "success": true,
+        "data": {}
+      },
+      "error": {
+        "success": false,
+        "message": "string"
+      }
+    }
+  },
+  {
+    "url": "/api/user/update/:id",
+    "method": "patch",
+    "permissions": "admin",
+    "request": {
+      "authorization": "bearer",
+      "body": {
+        "firstname": "string",
+        "lastname": "string",
+        "username": "string",
+        "active": "boolean",
+        "paid": "boolean",
+        "admin": "boolean"
+      }
+    },
+    "response": {
+      "200": {
+        "success": true,
+        "data": {},
+        "changes": 1
+      },
+      "error": {
+        "success": false,
+        "message": "string"
+      }
+    }
+  },
+  {
+    "url": "/api/user/delete",
+    "method": "delete",
+    "permissions": "admin",
+    "request": {
+      "authorization": "bearer",
+      "body": {
+        "ids": []
+      }
+    },
+    "response": {
+      "200": {
+        "success": true,
+        "changes": 1
+      },
+      "error": {
+        "success": false,
+        "message": "string"
+      }
+    }
+  },
+  {
+    "url": "/api/user/me",
+    "method": "get",
+    "permissions": "admin",
+    "request": {
+      "authorization": "bearer"
+    },
+    "response": {
+      "200": {
+        "success": true,
+        "data": {}
+      },
+      "error": {
+        "success": false,
+        "message": "string"
+      }
+    }
+  },
+
+  {
+    "url": "/api/module/list",
+    "method": "get",
+    "permissions": "admin",
+    "request": {
+      "authorization": "bearer",
+      "body": {
+        "search": "string"
+      }
+    },
+    "response": {
+      "200": {
+        "success": true,
+        "data": []
+      },
+      "error": {
+        "success": false,
+        "message": "string"
+      }
+    }
+  },
+  {
+    "url": "/api/module/get/:id",
+    "method": "get",
+    "permissions": "admin",
+    "request": {
+      "authorization": "bearer",
+      "body": {
+        "blockId": "string"
+      }
+    },
+    "response": {
+      "200": {
+        "success": true,
+        "data": {}
+      },
+      "error": {
+        "success": false,
+        "message": "string"
+      }
+    }
+  },
+  {
+    "url": "/api/module/create",
+    "method": "post",
+    "permissions": "admin",
+    "request": {
+      "authorization": "bearer",
+      "body": {
+        "title": "string",
+        "name": "string"
+      }
+    },
+    "response": {
+      "200": {
+        "success": true,
+        "data": {}
+      },
+      "error": {
+        "success": false,
+        "message": "string"
+      }
+    }
+  },
+  {
+    "url": "/api/module/update/:id",
+    "method": "patch",
+    "permissions": "admin",
+    "request": {
+      "authorization": "bearer",
+      "body": {
+        "title": "string",
+        "name": "string"
+      }
+    },
+    "response": {
+      "200": {
+        "success": true,
+        "data": {},
+        "changes": 1
+      },
+      "error": {
+        "success": false,
+        "message": "string"
+      }
+    }
+  },
+  {
+    "url": "/api/module/delete",
+    "method": "delete",
+    "permissions": "admin",
+    "request": {
+      "authorization": "bearer",
+      "body": {
+        "ids": []
+      }
+    },
+    "response": {
+      "200": {
+        "success": true,
+        "changes": 1
+      },
+      "error": {
+        "success": false,
+        "message": "string"
+      }
+    }
+  },
+
+  {
+    "url": "/api/block/list",
+    "method": "get",
+    "permissions": "admin",
+    "request": {
+      "authorization": "bearer",
+      "body": {
+        "search": "string"
+      }
+    },
+    "response": {
+      "200": {
+        "success": true,
+        "data": []
+      },
+      "error": {
+        "success": false,
+        "message": "string"
+      }
+    }
+  },
+  {
+    "url": "/api/block/get/:id",
+    "method": "get",
+    "permissions": "admin",
+    "request": {
+      "authorization": "bearer"
+    },
+    "response": {
+      "200": {
+        "success": true,
+        "data": {}
+      },
+      "error": {
+        "success": false,
+        "message": "string"
+      }
+    }
+  },
+  {
+    "url": "/api/block/create",
+    "method": "post",
+    "permissions": "admin",
+    "request": {
+      "authorization": "bearer",
+      "body": {
+        "moduleId": "string",
+        "title": "string",
+        "name": "string"
+      }
+    },
+    "response": {
+      "200": {
+        "success": true,
+        "data": {}
+      },
+      "error": {
+        "success": false,
+        "message": "string"
+      }
+    }
+  },
+  {
+    "url": "/api/block/update/:id",
+    "method": "patch",
+    "permissions": "admin",
+    "request": {
+      "authorization": "bearer",
+      "body": {
+        "moduleId": "string",
+        "title": "string",
+        "name": "string"
+      }
+    },
+    "response": {
+      "200": {
+        "success": true,
+        "data": {},
+        "changes": 1
+      },
+      "error": {
+        "success": false,
+        "message": "string"
+      }
+    }
+  },
+  {
+    "url": "/api/block/delete",
+    "method": "delete",
+    "permissions": "admin",
+    "request": {
+      "authorization": "bearer",
+      "body": {
+        "ids": []
+      }
+    },
+    "response": {
+      "200": {
+        "success": true,
+        "changes": 1
+      },
+      "error": {
+        "success": false,
+        "message": "string"
+      }
+    }
+  }
+]
+
+
