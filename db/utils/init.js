@@ -30,6 +30,14 @@ db.serialize(() => {
     FOREIGN KEY(moduleId) REFERENCES modules(id)\
   )");
 
+  db.run("CREATE TABLE IF NOT EXISTS files ( \
+    id TEXT PRIMARY KEY, \
+    name TEXT NOT NULL, \
+    size INTEGER NOT NULL, \
+    mimetype TEXT NOT NULL, \
+    path TEXT NOT NULL \
+  )");
+
   // create an initial user (username: alice, password: letmein)
   // const username = 'alice';
   // const salt = crypto.randomBytes(16).toString('hex');

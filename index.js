@@ -46,6 +46,7 @@ app.use(passport.initialize())
 app.use(passport.session())
 
 // routes
+const routerFile = require("./route/file");
 const routerUser = require("./route/user");
 const routerAuth = require("./route/auth");
 const routerModule = require("./route/module");
@@ -53,10 +54,16 @@ const routerBlock = require("./route/block");
 app.get("/", function (req, res) {
   res.json({ success: true })
 })
+app.use('/api/file', routerFile);
 app.use('/api/user', routerUser);
 app.use('/api/auth', routerAuth);
 app.use('/api/module', routerModule);
 app.use('/api/block', routerBlock);
+
+// files
+const fs = require('fs');
+const dir = './files';
+if (!fs.existsSync(dir)) fs.mkdirSync(dir);
 
 // start the server in port 8081
 const server = app.listen(process.env.PORT || 8081, function () {

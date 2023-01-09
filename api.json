@@ -453,6 +453,43 @@
         "message": "string"
       }
     }
+  },
+
+  {
+    "url": "/api/file/upload",
+    "method": "post",
+    "permissions": "user",
+    "request": {
+      "authorization": "bearer",
+      "body": {
+        "file": "binary"
+      }
+    },
+    "response": {
+      "200": {
+        "success": true,
+        "data": []
+      },
+      "error": {
+        "success": false,
+        "message": "string"
+      }
+    }
+  },
+  {
+    "url": "/api/file/download/:id",
+    "method": "get",
+    "permissions": "user",
+    "request": {
+      "authorization": "bearer"
+    },
+    "response": {
+      "200": "download",
+      "error": {
+        "success": false,
+        "message": "string"
+      }
+    }
   }
 ]
 
