@@ -5,7 +5,16 @@ const db = require("../db/utils/init")
 const { v4: guid } = require("uuid");
 const { verifyAdmin } = require("../passport/auth")
 
-router.get("/list", verifyAdmin, (req, res, next) => {
+router.post("/list", verifyAdmin, (req, res, next) => {
+  const errors = []
+  if (!req.body.moduleId) errors.push("No moduleId specified");
+  if (errors.length) {
+    res.status(400).json({
+      success: false,
+      message: errors.join(", ")
+    })
+    return;
+  }
   const moduleId = req.body.moduleId || '';
   const search = req.body.search || '';
   let query = "SELECT id, moduleId, title, name FROM blocks WHERE (title LIKE ? OR name LIKE ?)";

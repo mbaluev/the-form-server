@@ -5,7 +5,7 @@ const db = require("../db/utils/init")
 const { v4: guid } = require("uuid");
 const { verifyAdmin } = require("../passport/auth")
 
-router.get("/list", verifyAdmin, (req, res, next) => {
+router.post("/list", verifyAdmin, (req, res, next) => {
   const search = req.body.search || '';
   const query = "SELECT id, title, name FROM modules WHERE title LIKE ? OR name LIKE ?"
   const params = ['%' + search + '%', '%' + search + '%'];
@@ -23,7 +23,7 @@ router.get("/list", verifyAdmin, (req, res, next) => {
     })
   });
 });
-router.get("/get/:id", verifyAdmin, (req, res, next) => {
+router.post("/get/:id", verifyAdmin, (req, res, next) => {
   const id = req.params.id;
   const blockId = req.body.blockId;
   let query;

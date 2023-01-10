@@ -38,6 +38,30 @@ db.serialize(() => {
     path TEXT NOT NULL \
   )");
 
+  db.run("CREATE TABLE IF NOT EXISTS files ( \
+    id TEXT PRIMARY KEY, \
+    name TEXT NOT NULL, \
+    size INTEGER NOT NULL, \
+    mimetype TEXT NOT NULL, \
+    path TEXT NOT NULL \
+  )");
+
+  db.run("CREATE TABLE IF NOT EXISTS documents ( \
+    id TEXT PRIMARY KEY, \
+    fileId TEXT NOT NULL, \
+    name TEXT NOT NULL, \
+    description TEXT NOT NULL, \
+    FOREIGN KEY(fileId) REFERENCES files(id)\
+  )");
+
+  db.run("CREATE TABLE IF NOT EXISTS materials ( \
+    id TEXT PRIMARY KEY, \
+    blockId TEXT NOT NULL, \
+    documentId TEXT NOT NULL, \
+    FOREIGN KEY(blockId) REFERENCES blocks(id),\
+    FOREIGN KEY(documentId) REFERENCES documents(id)\
+  )");
+
   // create an initial user (username: alice, password: letmein)
   // const username = 'alice';
   // const salt = crypto.randomBytes(16).toString('hex');

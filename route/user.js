@@ -7,7 +7,7 @@ const cryptoPass = require("../db/utils/cryptoPass");
 const { v4: guid } = require("uuid");
 const { verifyUser, verifyAdmin } = require("../passport/auth")
 
-router.get("/list", verifyAdmin, (req, res, next) => {
+router.post("/list", verifyAdmin, (req, res, next) => {
   const search = req.body.search || '';
   const query = "SELECT id, firstname, lastname, username, active, paid, admin FROM users WHERE username LIKE ?"
   const params = ['%' + search + '%'];

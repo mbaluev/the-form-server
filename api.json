@@ -490,6 +490,114 @@
         "message": "string"
       }
     }
+  },
+
+  {
+    "url": "/api/material/list",
+    "method": "get",
+    "permissions": "admin",
+    "request": {
+      "authorization": "bearer",
+      "body": {
+        "search": "string"
+      }
+    },
+    "response": {
+      "200": {
+        "success": true,
+        "data": []
+      },
+      "error": {
+        "success": false,
+        "message": "string"
+      }
+    }
+  },
+  {
+    "url": "/api/material/get/:id",
+    "method": "get",
+    "permissions": "admin",
+    "request": {
+      "authorization": "bearer"
+    },
+    "response": {
+      "200": {
+        "success": true,
+        "data": {}
+      },
+      "error": {
+        "success": false,
+        "message": "string"
+      }
+    }
+  },
+  {
+    "url": "/api/material/create",
+    "method": "post",
+    "permissions": "admin",
+    "request": {
+      "authorization": "bearer",
+      "body": {
+        "moduleId": "string",
+        "title": "string",
+        "name": "string"
+      }
+    },
+    "response": {
+      "200": {
+        "success": true,
+        "data": {}
+      },
+      "error": {
+        "success": false,
+        "message": "string"
+      }
+    }
+  },
+  {
+    "url": "/api/material/update/:id",
+    "method": "patch",
+    "permissions": "admin",
+    "request": {
+      "authorization": "bearer",
+      "body": {
+        "moduleId": "string",
+        "title": "string",
+        "name": "string"
+      }
+    },
+    "response": {
+      "200": {
+        "success": true,
+        "data": {},
+        "changes": 1
+      },
+      "error": {
+        "success": false,
+        "message": "string"
+      }
+    }
+  },
+  {
+    "url": "/api/material/delete",
+    "method": "delete",
+    "permissions": "admin",
+    "request": {
+      "authorization": "bearer",
+      "body": {
+        "ids": []
+      }
+    },
+    "response": {
+      "200": {
+        "success": true,
+        "changes": 1
+      },
+      "error": {
+        "success": false,
+        "message": "string"
+      }
+    }
   }
 ]
 
