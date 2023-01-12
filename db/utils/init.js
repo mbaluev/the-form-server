@@ -62,6 +62,14 @@ db.serialize(() => {
     FOREIGN KEY(documentId) REFERENCES documents(id)\
   )");
 
+  db.run("CREATE TABLE IF NOT EXISTS tasks ( \
+    id TEXT PRIMARY KEY, \
+    blockId TEXT NOT NULL, \
+    documentId TEXT NOT NULL, \
+    FOREIGN KEY(blockId) REFERENCES blocks(id),\
+    FOREIGN KEY(documentId) REFERENCES documents(id)\
+  )");
+
   // create an initial user (username: alice, password: letmein)
   // const username = 'alice';
   // const salt = crypto.randomBytes(16).toString('hex');

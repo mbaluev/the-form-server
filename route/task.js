@@ -17,14 +17,14 @@ router.post("/list", verifyAdmin, (req, res, next) => {
     return;
   }
   const blockId = req.body.blockId || '';
-  const query = `SELECT m.id, m.blockId, m.documentId, 
+  const query = `SELECT t.id, t.blockId, t.documentId, 
     d.name, d.description, d.fileId,
     f.name as filename, f.size, f.mimetype, f.path
-    FROM materials m
-    LEFT JOIN blocks b ON b.id = m.blockId
-    LEFT JOIN documents d ON d.id = m.documentId
+    FROM tasks t
+    LEFT JOIN blocks b ON b.id = t.blockId
+    LEFT JOIN documents d ON d.id = t.documentId
     LEFT JOIN files f ON f.id = d.fileId
-    WHERE m.blockId = ?`;
+    WHERE t.blockId = ?`;
   const params = [blockId];
   db.all(query, params, (err, rows) => {
     if (err) {
@@ -58,14 +58,14 @@ router.post("/list", verifyAdmin, (req, res, next) => {
   });
 });
 router.get("/get/:id", verifyAdmin, (req, res, next) => {
-  const query = `SELECT m.id, m.blockId, m.documentId, 
+  const query = `SELECT t.id, t.blockId, t.documentId, 
     d.name, d.description, d.fileId,
     f.name as filename, f.size, f.mimetype, f.path
-    FROM materials m
-    LEFT JOIN blocks b ON b.id = m.blockId
-    LEFT JOIN documents d ON d.id = m.documentId
+    FROM tasks t
+    LEFT JOIN blocks b ON b.id = t.blockId
+    LEFT JOIN documents d ON d.id = t.documentId
     LEFT JOIN files f ON f.id = d.fileId
-    WHERE m.id = ?`;
+    WHERE t.id = ?`;
   const params = [req.params.id]
   db.get(query, params, (err, row) => {
     if (err) {
@@ -133,17 +133,17 @@ router.post("/create", verifyAdmin, (req, res, next) => {
   const query = 'INSERT INTO documents (id, fileId, name, description) VALUES (?,?,?,?)'
   const params = [data.document.id, data.document.file.id, data.document.name, data.document.description];
   db.run(query, params, function (err, result) {
-    if (err){
+    if (err) {
       res.status(400).json({
         success: false,
         message: err.message
       })
       return;
     }
-    const query = 'INSERT INTO materials (id, blockId, documentId) VALUES (?,?,?)'
+    const query = 'INSERT INTO tasks (id, blockId, documentId) VALUES (?,?,?)'
     const params = [data.id, data.blockId, data.document.id];
     db.run(query, params, function (err, result) {
-      if (err){
+      if (err) {
         res.status(400).json({
           success: false,
           message: err.message
@@ -195,7 +195,7 @@ router.patch("/update/:id", verifyAdmin, (req, res, next) => {
         WHERE id = ?`;
     const params = [data.document.name, data.document.description, data.document.file.id, data.document.id];
     db.run(query, params, function (err, result) {
-      if (err){
+      if (err) {
         res.status(400).json({
           success: false,
           message: err.message
@@ -248,14 +248,14 @@ router.delete("/delete", verifyAdmin, (req, res, next) => {
   const ids = req.body.ids;
   let changes = 0;
   ids?.forEach((id) => {
-    const query = `SELECT m.id, m.blockId, m.documentId, 
+    const query = `SELECT t.id, t.blockId, t.documentId, 
     d.name, d.description, d.fileId,
     f.name as filename, f.size, f.mimetype, f.path
-    FROM materials m
-    LEFT JOIN blocks b ON b.id = m.blockId
-    LEFT JOIN documents d ON d.id = m.documentId
+    FROM tasks t
+    LEFT JOIN blocks b ON b.id = t.blockId
+    LEFT JOIN documents d ON d.id = t.documentId
     LEFT JOIN files f ON f.id = d.fileId
-    WHERE m.id = ?`;
+    WHERE t.id = ?`;
     const params = [id]
     db.get(query, params, (err, row) => {
       const data = {
@@ -304,7 +304,7 @@ router.delete("/delete", verifyAdmin, (req, res, next) => {
             })
             return;
           }
-          const query = `DELETE FROM materials WHERE id = ?`;
+          const query = `DELETE FROM tasks WHERE id = ?`;
           const params = [data.id];
           db.run(query, params, function (err, result) {
             if (err) {
