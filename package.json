@@ -27,6 +27,7 @@
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
     "sqlite3": "^5.1.4",
+    "sqlite3-transactions": "^0.0.5",
     "uuid": "^9.0.0"
   }
 }

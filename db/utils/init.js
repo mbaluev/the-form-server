@@ -2,8 +2,8 @@ const connect = require("./connect");
 
 const db = connect();
 
-db.serialize(() => {
-  db.run("CREATE TABLE IF NOT EXISTS users ( \
+db.beginTransaction(function(err, transaction) {
+  transaction.run("CREATE TABLE IF NOT EXISTS users ( \
     id TEXT PRIMARY KEY, \
     firstname TEXT NOT NULL, \
     lastname TEXT NOT NULL, \
@@ -16,13 +16,13 @@ db.serialize(() => {
     refreshToken TEXT \
   )");
 
-  db.run("CREATE TABLE IF NOT EXISTS modules ( \
+  transaction.run("CREATE TABLE IF NOT EXISTS modules ( \
     id TEXT PRIMARY KEY, \
     title TEXT NOT NULL, \
     name TEXT NOT NULL \
   )");
 
-  db.run("CREATE TABLE IF NOT EXISTS blocks ( \
+  transaction.run("CREATE TABLE IF NOT EXISTS blocks ( \
     id TEXT PRIMARY KEY, \
     moduleId TEXT NOT NULL, \
     title TEXT NOT NULL, \
@@ -30,7 +30,7 @@ db.serialize(() => {
     FOREIGN KEY(moduleId) REFERENCES modules(id)\
   )");
 
-  db.run("CREATE TABLE IF NOT EXISTS files ( \
+  transaction.run("CREATE TABLE IF NOT EXISTS files ( \
     id TEXT PRIMARY KEY, \
     name TEXT NOT NULL, \
     size INTEGER NOT NULL, \
@@ -38,7 +38,7 @@ db.serialize(() => {
     path TEXT NOT NULL \
   )");
 
-  db.run("CREATE TABLE IF NOT EXISTS files ( \
+  transaction.run("CREATE TABLE IF NOT EXISTS files ( \
     id TEXT PRIMARY KEY, \
     name TEXT NOT NULL, \
     size INTEGER NOT NULL, \
@@ -46,7 +46,7 @@ db.serialize(() => {
     path TEXT NOT NULL \
   )");
 
-  db.run("CREATE TABLE IF NOT EXISTS documents ( \
+  transaction.run("CREATE TABLE IF NOT EXISTS documents ( \
     id TEXT PRIMARY KEY, \
     fileId TEXT NOT NULL, \
     name TEXT NOT NULL, \
@@ -54,7 +54,7 @@ db.serialize(() => {
     FOREIGN KEY(fileId) REFERENCES files(id)\
   )");
 
-  db.run("CREATE TABLE IF NOT EXISTS materials ( \
+  transaction.run("CREATE TABLE IF NOT EXISTS materials ( \
     id TEXT PRIMARY KEY, \
     blockId TEXT NOT NULL, \
     documentId TEXT NOT NULL, \
@@ -62,21 +62,39 @@ db.serialize(() => {
     FOREIGN KEY(documentId) REFERENCES documents(id)\
   )");
 
-  db.run("CREATE TABLE IF NOT EXISTS tasks ( \
+  transaction.run("CREATE TABLE IF NOT EXISTS tasks ( \
     id TEXT PRIMARY KEY, \
     blockId TEXT NOT NULL, \
     documentId TEXT NOT NULL, \
     FOREIGN KEY(blockId) REFERENCES blocks(id),\
     FOREIGN KEY(documentId) REFERENCES documents(id)\
+  )");
+
+  transaction.run("CREATE TABLE IF NOT EXISTS taskDocuments ( \
+    id TEXT PRIMARY KEY, \
+    taskId TEXT NOT NULL, \
+    title TEXT NOT NULL, \
+    FOREIGN KEY(taskId) REFERENCES tasks(id)\
+  )");
+
+  transaction.run("CREATE TABLE IF NOT EXISTS taskLinks ( \
+    id TEXT PRIMARY KEY, \
+    taskId TEXT NOT NULL, \
+    title TEXT NOT NULL, \
+    FOREIGN KEY(taskId) REFERENCES tasks(id)\
   )");
 
   // create an initial user (username: alice, password: letmein)
   // const username = 'alice';
   // const salt = crypto.randomBytes(16).toString('hex');
   // const password = cryptoPass(salt, 'letmein');
-  // db.run('INSERT OR IGNORE INTO users (id, username, password, salt, active, paid, admin) VALUES (?,?,?,?,?,?,?)',
+  // transaction.run('INSERT OR IGNORE INTO users (id, username, password, salt, active, paid, admin) VALUES (?,?,?,?,?,?,?)',
   //   [guid(), username, password, salt, 1, 0, 0]
   // );
+
+  transaction.commit((err) => {
+    if (err) return console.log(err);
+  });
 });
 
 module.exports = db;
