@@ -1,7 +1,6 @@
 const express = require("express")
 const router = express.Router()
 const db = require("../db/utils/init")
-const fs = require('fs');
 const { v4: guid } = require("uuid");
 const { verifyAdmin } = require("../passport/auth")
 
