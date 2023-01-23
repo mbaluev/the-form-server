@@ -53,6 +53,7 @@ const routerModule = require("./route/module");
 const routerBlock = require("./route/block");
 const routerMaterial = require("./route/material");
 const routerTask = require("./route/task");
+const routerQuestion = require("./route/question");
 app.get("/", function (req, res) {
   res.json({ success: true })
 })
@@ -63,6 +64,7 @@ app.use('/api/module', routerModule);
 app.use('/api/block', routerBlock);
 app.use('/api/material', routerMaterial);
 app.use('/api/task', routerTask);
+app.use('/api/question', routerQuestion);
 
 // files
 const fs = require('fs');

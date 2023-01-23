@@ -84,6 +84,28 @@ db.beginTransaction(function(err, transaction) {
     FOREIGN KEY(taskId) REFERENCES tasks(id)\
   )");
 
+  transaction.run("CREATE TABLE IF NOT EXISTS questions ( \
+    id TEXT PRIMARY KEY, \
+    blockId TEXT NOT NULL, \
+    title TEXT NOT NULL, \
+    FOREIGN KEY(blockId) REFERENCES blocks(id)\
+  )");
+
+  transaction.run("CREATE TABLE IF NOT EXISTS questionAnswers ( \
+    id TEXT PRIMARY KEY, \
+    questionId TEXT NOT NULL, \
+    title TEXT NOT NULL, \
+    FOREIGN KEY(questionId) REFERENCES questions(id)\
+  )");
+
+  transaction.run("CREATE TABLE IF NOT EXISTS questionAnswersCorrect ( \
+    id TEXT PRIMARY KEY, \
+    questionId TEXT NOT NULL, \
+    questionAnswerId TEXT NOT NULL, \
+    FOREIGN KEY(questionId) REFERENCES questions(id),\
+    FOREIGN KEY(questionAnswerId) REFERENCES questionAnswers(id)\
+  )");
+
   // create an initial user (username: alice, password: letmein)
   // const username = 'alice';
   // const salt = crypto.randomBytes(16).toString('hex');
