@@ -29,34 +29,44 @@ const corsOptions = {
 }
 app.use(cors(corsOptions))
 
+// postgres
+const init = require('./db/pg/utils/init');
+init().then(() => console.log('Connected to the pg database'));
+const store = require('./db/pg/utils/session');
+const passport = require("./db/pg/passport");
+
+// sqlite
+// const store = require('./db/sqlite/utils/session');
+// const passport = require("./db/sqlite/passport");
+
 // session
-const session = require("express-session")
-const SQLiteStore = require("connect-sqlite3")(session);
+const session = require("express-session");
 app.use(session({
-  store: new SQLiteStore({ db: 'the-form', dir: './db' }),
+  store,
   secret: process.env.SESSION_SECRET,
-  resave: false,
   saveUninitialized: false,
+  resave: false,
   cookie: { secure: true, sameSite: 'none' }
 }))
 
 // passport
-const passport = require("./passport");
 app.use(passport.initialize())
 app.use(passport.session())
 
-// routes
-const routerAuth = require("./route/auth");
-const routerUser = require("./route/user");
-const routerFile = require("./route/file");
-const routerModule = require("./route/module");
-const routerBlock = require("./route/block");
-const routerMaterial = require("./route/material");
-const routerTask = require("./route/task");
-const routerQuestion = require("./route/question");
-app.get("/", function (req, res) {
+// main route
+app.get("/", (req, res) => {
   res.json({ success: true })
 })
+
+// routes
+const routerAuth = require("./db/pg/route/auth");
+const routerUser = require("./db/pg/route/user");
+const routerFile = require("./db/pg/route/file");
+const routerModule = require("./db/pg/route/module");
+const routerBlock = require("./db/pg/route/block");
+const routerMaterial = require("./db/pg/route/material");
+const routerTask = require("./db/pg/route/task");
+const routerQuestion = require("./db/pg/route/question");
 app.use('/api/auth', routerAuth);
 app.use('/api/user', routerUser);
 app.use('/api/file', routerFile);
