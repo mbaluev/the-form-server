@@ -8,16 +8,8 @@ const getQuestionsByBlockId = async (client, blockId) => {
     const data = { blockId };
     const questionsList = await questionEntity.list(client, data);
     const questions = [];
-    for (const question of questionsList) {
-      const options = await questionAnswerEntity.list(client, { questionId: question.id });
-      const optionsCorrectId = await questionAnswerCorrectEntity.list(client, { questionId: question.id });
-      question.options = options.map(option => {
-        return {
-          id: option.id,
-          title: option.title
-        }
-      });
-      question.optionsCorrectId = optionsCorrectId.map(option => option.questionAnswerId);
+    for (const questionItem of questionsList) {
+      const { question } = getQuestion(client, questionItem.id);
       questions.push(question);
     }
     return { questions };

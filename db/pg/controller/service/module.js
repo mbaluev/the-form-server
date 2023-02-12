@@ -13,7 +13,13 @@ const getModules = async (client, search) => {
 const getModulesByUserId = async (client, userId, search) => {
   try {
     const data = { userId, search };
-    const modules = await moduleEntity.list(client, data);
+    const modulesList = await moduleEntity.list(client, data);
+    const modules = [];
+    for (const moduleItem of modulesList) {
+      const { blocks } = await blockService.getBlocksByModuleId(client, moduleItem.id)
+      moduleItem.blocks = blocks;
+      modules.push(moduleItem);
+    }
     return { modules };
   } catch (err) {
     throw err;
