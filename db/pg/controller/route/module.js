@@ -22,26 +22,6 @@ const getModules = async (req, res) => {
     handlers.finallyHandler(client);
   }
 }
-const getModulesUser = async (req, res) => {
-  const client = await pool.connect();
-  try {
-    await client.query('BEGIN')
-
-    const userId = req.user.id;
-    const search = req.body.search;
-    const { modules } = await moduleService.getModulesByUserId(client, userId, search);
-
-    await client.query('COMMIT')
-    res.status(200).send({
-      success: true,
-      data: modules
-    });
-  } catch (err) {
-    await handlers.errorHandler(client, res, err);
-  } finally {
-    handlers.finallyHandler(client);
-  }
-}
 const getModule = async (req, res) => {
   const client = await pool.connect();
   try {
@@ -134,11 +114,54 @@ const deleteModules = async (req, res) => {
   }
 }
 
+const getModulesUser = async (req, res) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN')
+
+    const userId = req.user.id;
+    const search = req.body.search;
+    const { modules } = await moduleService.getModulesUser(client, userId, search);
+
+    await client.query('COMMIT')
+    res.status(200).send({
+      success: true,
+      data: modules
+    });
+  } catch (err) {
+    await handlers.errorHandler(client, res, err);
+  } finally {
+    handlers.finallyHandler(client);
+  }
+}
+const getModuleUser = async (req, res) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN')
+
+    const id = req.params.id;
+    const userId = req.user.id;
+    const { module } = await moduleService.getModuleUser(client, id, userId)
+
+    await client.query('COMMIT')
+    res.status(200).send({
+      success: true,
+      data: module
+    });
+  } catch (err) {
+    await handlers.errorHandler(client, res, err);
+  } finally {
+    handlers.finallyHandler(client);
+  }
+}
+
 module.exports = {
   getModules,
-  getModulesUser,
   getModule,
   createModule,
   updateModule,
-  deleteModules
+  deleteModules,
+
+  getModulesUser,
+  getModuleUser,
 }

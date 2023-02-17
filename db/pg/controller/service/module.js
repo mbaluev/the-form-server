@@ -10,21 +10,6 @@ const getModules = async (client, search) => {
     throw err;
   }
 }
-const getModulesByUserId = async (client, userId, search) => {
-  try {
-    const data = { userId, search };
-    const modulesList = await moduleEntity.list(client, data);
-    const modules = [];
-    for (const moduleItem of modulesList) {
-      const { blocks } = await blockService.getBlocksByModuleId(client, moduleItem.id)
-      moduleItem.blocks = blocks;
-      modules.push(moduleItem);
-    }
-    return { modules };
-  } catch (err) {
-    throw err;
-  }
-}
 const getModule = async (client, id) => {
   try {
     const data = { id };
@@ -82,13 +67,42 @@ const deleteModules = async (client, ids) => {
   }
 }
 
+const getModulesUser = async (client, userId, search) => {
+  try {
+    const data = { userId, search };
+    const modulesList = await moduleEntity.listUser(client, data);
+    const modules = [];
+    for (const moduleItem of modulesList) {
+      const { blocks } = await blockService.getBlocksUserByModuleId(client, moduleItem.id, userId);
+      moduleItem.blocks = blocks;
+      modules.push(moduleItem);
+    }
+    return { modules };
+  } catch (err) {
+    throw err;
+  }
+}
+const getModuleUser = async (client, id, userId) => {
+  try {
+    const data = { id, userId };
+    const module = await moduleEntity.getUser(client, data);
+    const { blocks } = await blockService.getBlocksUserByModuleId(client, module.id, userId);
+    module.blocks = blocks;
+    return { module };
+  } catch (err) {
+    throw err;
+  }
+}
+
 module.exports = {
   getModules,
-  getModulesByUserId,
   getModule,
   getModuleByBlockId,
   createModule,
   updateModule,
   deleteModule,
-  deleteModules
+  deleteModules,
+
+  getModulesUser,
+  getModuleUser,
 }

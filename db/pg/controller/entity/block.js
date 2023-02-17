@@ -4,7 +4,21 @@ const mapRow = (row) => {
     moduleId: row.moduleid,
     title: row.title,
     name: row.name,
-    position: row.position
+    position: row.position,
+  }
+}
+const mapRowUser = (row) => {
+  return {
+    id: row.id,
+    moduleId: row.moduleid,
+    title: row.title,
+    name: row.name,
+    position: row.position,
+    enable: row.enable,
+    complete: row.complete,
+    completeMaterials: row.completematerials,
+    completeQuestions: row.completequestions,
+    completeTasks: row.completetasks
   }
 }
 
@@ -75,10 +89,52 @@ const del = async (client, id) => {
   }
 }
 
+const listUser = async (client, data) => {
+  try {
+    const search = data.search || '';
+    const moduleId = data.moduleId;
+    const userId = data.userId;
+    let query1 = `SELECT b.id, b.moduleId, b.title, b.name, b.position, ub.enable, ub.complete, ub.completeMaterials, ub.completeQuestions, ub.completeTasks
+      FROM blocks b
+      INNER JOIN modules m ON m.id = b.moduleId 
+      LEFT JOIN userBlocks ub ON ub.blockId = b.id AND ub.userId = $1
+      WHERE (LOWER(b.title) LIKE $2 OR LOWER(b.name) LIKE $3)`
+    const params1 = [userId, '%' + search.toLowerCase() + '%', '%' + search.toLowerCase() + '%'];
+    if (moduleId) {
+      query1 += " AND b.moduleId = $4";
+      params1.push(moduleId);
+    }
+    query1 += " ORDER BY m.position, b.position";
+    const res1 = await client.query(query1, params1);
+    return res1.rows.map(mapRowUser);
+  } catch (err) {
+    throw err;
+  }
+}
+const getUser = async (client, data) => {
+  try {
+    const id = data.id;
+    const userId = data.userId;
+    const query1 = `SELECT b.id, b.moduleId, b.title, b.name, b.position, ub.enable, ub.complete, ub.completeMaterials, ub.completeQuestions, ub.completeTasks
+      FROM blocks b
+      INNER JOIN modules m ON m.id = b.moduleId 
+      LEFT JOIN userBlocks ub ON ub.blockId = b.id AND ub.userId = $1
+      WHERE id = $2`
+    const params1 = [userId, id];
+    const res1 = await client.query(query1, params1);
+    return res1.rows.map(mapRow)[0];
+  } catch (err) {
+    throw err;
+  }
+}
+
 module.exports = {
   list,
   get,
   create,
   update,
-  del
+  del,
+
+  listUser,
+  getUser
 }

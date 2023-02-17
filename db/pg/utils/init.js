@@ -141,6 +141,21 @@ const init = async () => {
     )`;
     await client.query(query);
 
+    // userBlocks
+    query = `CREATE TABLE IF NOT EXISTS userBlocks (
+      id TEXT PRIMARY KEY,
+      blockId TEXT NOT NULL,
+      userId TEXT NOT NULL,
+      enable BOOL NOT NULL,
+      complete BOOL NOT NULL,
+      completeMaterials BOOL NOT NULL,
+      completeQuestions BOOL NOT NULL,
+      completeTasks BOOL NOT NULL,
+      FOREIGN KEY(blockId) REFERENCES blocks(id),
+      FOREIGN KEY(userId) REFERENCES users(id)
+    )`;
+    await client.query(query);
+
     // create an initial user (username: qwe, password: qwe)
     // const { v4: guid } = require("uuid");
     // const firstname = 'qwe';

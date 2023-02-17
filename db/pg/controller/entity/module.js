@@ -1,17 +1,6 @@
 const list = async (client, data) => {
   try {
     const search = data.search || '';
-    const userId = data.userId;
-    if (userId) {
-      const query1 = `SELECT m.id, m.title, m.name, m.position, um.enable, um.complete 
-        FROM modules m
-        LEFT JOIN userModules um ON um.moduleId = m.id AND um.userId = $1
-        WHERE LOWER(title) LIKE $2 OR LOWER(name) LIKE $3 
-        ORDER BY position`
-      const params1 = [userId, '%' + search.toLowerCase() + '%', '%' + search.toLowerCase() + '%'];
-      const res1 = await client.query(query1, params1);
-      return res1.rows;
-    }
     const query1 = `SELECT id, title, name, position FROM modules WHERE LOWER(title) LIKE $1 OR LOWER(name) LIKE $2 ORDER BY position`
     const params1 = ['%' + search.toLowerCase() + '%', '%' + search.toLowerCase() + '%'];
     const res1 = await client.query(query1, params1);
@@ -82,10 +71,45 @@ const del = async (client, id) => {
   }
 }
 
+const listUser = async (client, data) => {
+  try {
+    const search = data.search || '';
+    const userId = data.userId;
+    const query1 = `SELECT m.id, m.title, m.name, m.position, um.enable, um.complete 
+      FROM modules m
+      LEFT JOIN userModules um ON um.moduleId = m.id AND um.userId = $1
+      WHERE LOWER(title) LIKE $2 OR LOWER(name) LIKE $3 
+      ORDER BY position`
+    const params1 = [userId, '%' + search.toLowerCase() + '%', '%' + search.toLowerCase() + '%'];
+    const res1 = await client.query(query1, params1);
+    return res1.rows;
+  } catch (err) {
+    throw err;
+  }
+}
+const getUser = async (client, data) => {
+  try {
+    const id = data.id;
+    const userId = data.userId;
+    const query1 = `SELECT m.id, m.title, m.name, m.position, um.enable, um.complete 
+      FROM modules m
+      LEFT JOIN userModules um ON um.moduleId = m.id AND um.userId = $1
+      WHERE m.id = $2`
+    const params1 = [userId, id];
+    const res1 = await client.query(query1, params1);
+    return res1.rows[0];
+  } catch (err) {
+    throw err;
+  }
+}
+
 module.exports = {
   list,
   get,
   create,
   update,
-  del
+  del,
+
+  listUser,
+  getUser
 }

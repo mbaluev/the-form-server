@@ -116,10 +116,57 @@ const deleteBlocks = async (req, res) => {
   }
 }
 
+const getBlocksUser = async (req, res) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const userId = req.user.id;
+    const search = req.body.search;
+    const moduleId = req.body.moduleId;
+    const { blocks } = moduleId ?
+      await blockService.getBlocksUserByModuleId(client, moduleId, userId, search) :
+      await blockService.getBlocksUser(client, userId, search);
+
+    await client.query('COMMIT');
+    res.status(200).send({
+      success: true,
+      data: blocks
+    });
+  } catch (err) {
+    await handlers.errorHandler(client, res, err);
+  } finally {
+    handlers.finallyHandler(client);
+  }
+}
+const getBlockUser = async (req, res) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const id = req.params.id;
+    const userId = req.user.id;
+    const { block } = await blockService.getBlockUser(client, id, userId);
+
+    await client.query('COMMIT');
+    res.status(200).send({
+      success: true,
+      data: block
+    });
+  } catch (err) {
+    await handlers.errorHandler(client, res, err);
+  } finally {
+    handlers.finallyHandler(client);
+  }
+}
+
 module.exports = {
   getBlocks,
   getBlock,
   createBlock,
   updateBlock,
-  deleteBlocks
+  deleteBlocks,
+
+  getBlocksUser,
+  getBlockUser
 }
