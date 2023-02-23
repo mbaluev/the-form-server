@@ -17,7 +17,7 @@ const list = async (client, data) => {
     }
     const query1 = `SELECT id, blockid, documentid FROM materials`
     const res1 = await client.query(query1);
-    return res1.rows;
+    return res1.rows.map(mapRow);
   } catch (err) {
     throw err;
   }

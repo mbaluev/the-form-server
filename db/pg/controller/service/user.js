@@ -24,15 +24,6 @@ const getUser = async (client, id) => {
 const createUser = async (client, dataUser) => {
   try {
     const user = await userEntity.create(client, dataUser);
-    const module = await moduleEntity.get(client, { position: 1 });
-    const dataUserModule = {
-      id: uuid.v4(),
-      moduleId: module.id,
-      userId: dataUser.id,
-      enable: true,
-      complete: false
-    };
-    await userModuleEntity.create(client, dataUserModule);
     return { user };
   } catch (err) {
     throw err;

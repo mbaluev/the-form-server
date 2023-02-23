@@ -2,6 +2,9 @@ const uuid = require("uuid");
 const pool = require("../../utils/pool");
 const handlers = require("../../utils/handlers");
 const moduleService = require("../service/module");
+const blockService = require("../service/block");
+const userModuleEntity = require("../entity/userModule");
+const userBlockEntity = require("../entity/userBlock");
 
 const getModules = async (req, res) => {
   const client = await pool.connect();
@@ -155,6 +158,51 @@ const getModuleUser = async (req, res) => {
   }
 }
 
+const userMiddleware = async (req, res, next) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN')
+
+    const userId = req.user.id;
+
+    // check first module & block enabled
+    const { modules } = await moduleService.getModulesUserEnable(client, userId)
+    const { blocks } = await blockService.getBlocksUserEnable(client, userId)
+    if (modules.length === 0) {
+      const { module } = await moduleService.getModuleFirst(client);
+      const dataUserModule = {
+        id: uuid.v4(),
+        moduleId: module.id,
+        userId,
+        enable: true,
+        complete: false
+      };
+      await userModuleEntity.create(client, dataUserModule);
+      if (blocks.length === 0) {
+        const { block } = await blockService.getBlockFirstByModuleId(client, module.id);
+        const dataUserBlock = {
+          id: uuid.v4(),
+          blockId: block.id,
+          userId,
+          enable: true,
+          complete: false,
+          completeMaterials: false,
+          completeQuestions: false,
+          completeTasks: false
+        };
+        await userBlockEntity.create(client, dataUserBlock);
+      }
+    }
+
+    await client.query('COMMIT')
+    next()
+  } catch (err) {
+    await handlers.errorHandler(client, res, err);
+  } finally {
+    handlers.finallyHandler(client);
+  }
+}
+
 module.exports = {
   getModules,
   getModule,
@@ -164,4 +212,6 @@ module.exports = {
 
   getModulesUser,
   getModuleUser,
+
+  userMiddleware,
 }

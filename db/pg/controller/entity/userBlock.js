@@ -1,16 +1,19 @@
 const mapRow = (row) => {
   return {
     id: row.id,
-    moduleId: row.moduleid,
+    blockId: row.blockid,
     userId: row.userid,
     enable: row.enable,
     complete: row.complete,
+    completeMaterials: row.completematerials,
+    completeQuestions: row.completequestions,
+    completeTasks: row.completetasks,
   }
 }
 
 const list = async (client) => {
   try {
-    const query1 = `SELECT id, moduleid, userid, enable, complete FROM userModules`
+    const query1 = `SELECT id, blockid, userid, enable, complete, completeMaterials, completeQuestions, completeTasks FROM userBlocks`
     const res1 = await client.query(query1);
     return res1.rows.map(mapRow);
   } catch (err) {
@@ -20,7 +23,7 @@ const list = async (client) => {
 const get = async (client, data) => {
   try {
     const id = data.id;
-    const query1 = `SELECT id, moduleid, userid, enable, complete FROM userModules WHERE id = $1`
+    const query1 = `SELECT id, blockid, userid, enable, complete, completeMaterials, completeQuestions, completeTasks FROM userBlocks WHERE id = $1`
     const params1 = [id]
     const res1 = await client.query(query1, params1);
     return res1.rows.map(mapRow)[0];
@@ -30,8 +33,8 @@ const get = async (client, data) => {
 }
 const create = async (client, data) => {
   try {
-    const query1 = 'INSERT INTO userModules (id, moduleid, userid, enable, complete) VALUES ($1,$2,$3,$4,$5)';
-    const params1 = [data.id, data.moduleId, data.userId, data.enable, data.complete];
+    const query1 = 'INSERT INTO userBlocks (id, blockid, userid, enable, complete, completeMaterials, completeQuestions, completeTasks) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)';
+    const params1 = [data.id, data.blockId, data.userId, data.enable, data.complete, data.completeMaterials, data.completeQuestions, data.completeTasks];
     await client.query(query1, params1);
     return data;
   } catch (err) {
@@ -40,13 +43,16 @@ const create = async (client, data) => {
 }
 const update = async (client, data) => {
   try {
-    const query1 = `UPDATE userModules SET 
-      moduleid = COALESCE($1,moduleid), 
+    const query1 = `UPDATE userBlocks SET 
+      blockid = COALESCE($1,blockid), 
       userid = COALESCE($2,userid), 
       enable = COALESCE($3,enable), 
-      complete = COALESCE($4,complete)
+      complete = COALESCE($4,complete),
+      completematerials = COALESCE($4,completematerials),
+      completequestions = COALESCE($4,completequestions),
+      completetasks = COALESCE($4,completetasks)
       WHERE id = $5`;
-    const params1 = [data.moduleId, data.userId, data.enable, data.complete, data.id];
+    const params1 = [data.blockId, data.userId, data.enable, data.complete, data.completeMaterials, data.completeQuestions, data.completeTasks, data.id];
     await client.query(query1, params1);
     return data;
   } catch (err) {
@@ -55,7 +61,7 @@ const update = async (client, data) => {
 }
 const del = async (client, id) => {
   try {
-    const query1 = `DELETE FROM userModules WHERE id = $1`;
+    const query1 = `DELETE FROM userBlocks WHERE id = $1`;
     const params1 = [id];
     await client.query(query1, params1);
     return true;
@@ -65,7 +71,7 @@ const del = async (client, id) => {
 }
 const delByUserId = async (client, userId) => {
   try {
-    const query1 = `DELETE FROM userModules WHERE userid = $1`;
+    const query1 = `DELETE FROM userBlocks WHERE userid = $1`;
     const params1 = [userId];
     await client.query(query1, params1);
     return true;

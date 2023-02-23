@@ -30,6 +30,15 @@ const getBlock = async (client, id) => {
     throw err;
   }
 }
+const getBlockFirstByModuleId = async (client, moduleId) => {
+  try {
+    const data = { moduleId, position: 1 };
+    const block = await blockEntity.get(client, data);
+    return { block };
+  } catch (err) {
+    throw err;
+  }
+}
 const createBlock = async (client, dataBlock) => {
   try {
     const block = await blockEntity.create(client, dataBlock);
@@ -88,6 +97,15 @@ const getBlocksUser = async (client, userId, search) => {
     throw err;
   }
 }
+const getBlocksUserEnable = async (client, userId, search) => {
+  try {
+    const data = { userId, enable: true, search };
+    const blocks = await blockEntity.listUser(client, data);
+    return { blocks };
+  } catch (err) {
+    throw err;
+  }
+}
 const getBlocksUserByModuleId = async (client, moduleId, userId, search) => {
   try {
     const data = { moduleId, userId, search };
@@ -111,12 +129,14 @@ module.exports = {
   getBlocks,
   getBlocksByModuleId,
   getBlock,
+  getBlockFirstByModuleId,
   createBlock,
   updateBlock,
   deleteBlock,
   deleteBlocks,
 
   getBlocksUser,
+  getBlocksUserEnable,
   getBlocksUserByModuleId,
   getBlockUser
 }

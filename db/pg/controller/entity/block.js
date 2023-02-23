@@ -45,10 +45,20 @@ const list = async (client, data) => {
 const get = async (client, data) => {
   try {
     const id = data.id;
-    const query1 = `SELECT id, moduleId, title, name, position FROM blocks WHERE id = $1`
-    const params1 = [id];
-    const res1 = await client.query(query1, params1);
-    return res1.rows.map(mapRow)[0];
+    const moduleId = data.moduleId;
+    const position = data.position;
+    if (id) {
+      const query1 = `SELECT id, moduleId, title, name, position FROM blocks WHERE id = $1`
+      const params1 = [id];
+      const res1 = await client.query(query1, params1);
+      return res1.rows.map(mapRow)[0];
+    }
+    if (moduleId && position) {
+      const query1 = `SELECT b.id, b.moduleId, b.title, b.name, b.position FROM blocks b INNER JOIN modules m ON m.id = b.moduleId WHERE m.id = $1 and b.position = $2`
+      const params1 = [moduleId, position];
+      const res1 = await client.query(query1, params1);
+      return res1.rows[0];
+    }
   } catch (err) {
     throw err;
   }
@@ -93,6 +103,7 @@ const listUser = async (client, data) => {
   try {
     const search = data.search || '';
     const moduleId = data.moduleId;
+    const enable = data.enable;
     const userId = data.userId;
     let query1 = `SELECT b.id, b.moduleId, b.title, b.name, b.position, ub.enable, ub.complete, ub.completeMaterials, ub.completeQuestions, ub.completeTasks
       FROM blocks b
@@ -100,9 +111,15 @@ const listUser = async (client, data) => {
       LEFT JOIN userBlocks ub ON ub.blockId = b.id AND ub.userId = $1
       WHERE (LOWER(b.title) LIKE $2 OR LOWER(b.name) LIKE $3)`
     const params1 = [userId, '%' + search.toLowerCase() + '%', '%' + search.toLowerCase() + '%'];
+    let index = 4;
     if (moduleId) {
-      query1 += " AND b.moduleId = $4";
+      query1 += ` AND b.moduleId = $${index}`;
       params1.push(moduleId);
+      index++;
+    }
+    if (enable !== undefined) {
+      query1 += ` AND ub.enable = $${index}`
+      params1.push(enable);
     }
     query1 += " ORDER BY m.position, b.position";
     const res1 = await client.query(query1, params1);

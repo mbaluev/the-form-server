@@ -75,12 +75,17 @@ const listUser = async (client, data) => {
   try {
     const search = data.search || '';
     const userId = data.userId;
-    const query1 = `SELECT m.id, m.title, m.name, m.position, um.enable, um.complete 
+    const enable = data.enable;
+    let query1 = `SELECT m.id, m.title, m.name, m.position, um.enable, um.complete 
       FROM modules m
       LEFT JOIN userModules um ON um.moduleId = m.id AND um.userId = $1
-      WHERE LOWER(title) LIKE $2 OR LOWER(name) LIKE $3 
-      ORDER BY position`
+      WHERE (LOWER(title) LIKE $2 OR LOWER(name) LIKE $3)`
     const params1 = [userId, '%' + search.toLowerCase() + '%', '%' + search.toLowerCase() + '%'];
+    if (enable !== undefined) {
+      query1 += ' AND um.enable = $4'
+      params1.push(enable);
+    }
+    query1 += ' ORDER BY position'
     const res1 = await client.query(query1, params1);
     return res1.rows;
   } catch (err) {
