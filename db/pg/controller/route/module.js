@@ -165,9 +165,8 @@ const userMiddleware = async (req, res, next) => {
 
     const userId = req.user.id;
 
-    // check first module & block enabled
+    // check first module enabled
     const { modules } = await moduleService.getModulesUserEnable(client, userId)
-    const { blocks } = await blockService.getBlocksUserEnable(client, userId)
     if (modules.length === 0) {
       const { module } = await moduleService.getModuleFirst(client);
       const dataUserModule = {
@@ -178,20 +177,23 @@ const userMiddleware = async (req, res, next) => {
         complete: false
       };
       await userModuleEntity.create(client, dataUserModule);
-      if (blocks.length === 0) {
-        const { block } = await blockService.getBlockFirstByModuleId(client, module.id);
-        const dataUserBlock = {
-          id: uuid.v4(),
-          blockId: block.id,
-          userId,
-          enable: true,
-          complete: false,
-          completeMaterials: false,
-          completeQuestions: false,
-          completeTasks: false
-        };
-        await userBlockEntity.create(client, dataUserBlock);
-      }
+    }
+
+    // check first block enabled
+    const { blocks } = await blockService.getBlocksUserEnable(client, userId)
+    if (blocks.length === 0) {
+      const { block } = await blockService.getBlockFirst(client);
+      const dataUserBlock = {
+        id: uuid.v4(),
+        blockId: block.id,
+        userId,
+        enable: true,
+        complete: false,
+        completeMaterials: false,
+        completeQuestions: false,
+        completeTasks: false
+      };
+      await userBlockEntity.create(client, dataUserBlock);
     }
 
     await client.query('COMMIT')

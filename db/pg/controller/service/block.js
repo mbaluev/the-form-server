@@ -30,9 +30,9 @@ const getBlock = async (client, id) => {
     throw err;
   }
 }
-const getBlockFirstByModuleId = async (client, moduleId) => {
+const getBlockFirst = async (client) => {
   try {
-    const data = { moduleId, position: 1 };
+    const data = { position: 1 };
     const block = await blockEntity.get(client, data);
     return { block };
   } catch (err) {
@@ -129,7 +129,7 @@ module.exports = {
   getBlocks,
   getBlocksByModuleId,
   getBlock,
-  getBlockFirstByModuleId,
+  getBlockFirst,
   createBlock,
   updateBlock,
   deleteBlock,

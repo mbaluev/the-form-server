@@ -45,7 +45,6 @@ const list = async (client, data) => {
 const get = async (client, data) => {
   try {
     const id = data.id;
-    const moduleId = data.moduleId;
     const position = data.position;
     if (id) {
       const query1 = `SELECT id, moduleId, title, name, position FROM blocks WHERE id = $1`
@@ -53,9 +52,13 @@ const get = async (client, data) => {
       const res1 = await client.query(query1, params1);
       return res1.rows.map(mapRow)[0];
     }
-    if (moduleId && position) {
-      const query1 = `SELECT b.id, b.moduleId, b.title, b.name, b.position FROM blocks b INNER JOIN modules m ON m.id = b.moduleId WHERE m.id = $1 and b.position = $2`
-      const params1 = [moduleId, position];
+    if (position) {
+      const query1 = `SELECT b.id, b.moduleId, b.title, b.name, b.position 
+        FROM blocks b 
+        INNER JOIN modules m ON m.id = b.moduleId 
+        WHERE b.position = $1
+        ORDER BY m.position b.position`
+      const params1 = [position];
       const res1 = await client.query(query1, params1);
       return res1.rows[0];
     }
