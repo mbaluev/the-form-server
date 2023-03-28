@@ -1,5 +1,7 @@
 const moduleEntity = require("../entity/module");
+const userModuleEntity = require("../entity/userModule");
 const blockService = require("../service/block");
+const uuid = require("uuid");
 
 const getModules = async (client, search) => {
   try {
@@ -22,15 +24,6 @@ const getModule = async (client, id) => {
 const getModuleByBlockId = async (client, blockId) => {
   try {
     const data = { blockId };
-    const module = await moduleEntity.get(client, data);
-    return { module };
-  } catch (err) {
-    throw err;
-  }
-}
-const getModuleFirst = async (client) => {
-  try {
-    const data = { position: 1 };
     const module = await moduleEntity.get(client, data);
     return { module };
   } catch (err) {
@@ -91,15 +84,6 @@ const getModulesUser = async (client, userId, search) => {
     throw err;
   }
 }
-const getModulesUserEnable = async (client, userId, search) => {
-  try {
-    const data = { userId, enable: true, search };
-    const modules = await moduleEntity.listUser(client, data);
-    return { modules };
-  } catch (err) {
-    throw err;
-  }
-}
 const getModuleUser = async (client, id, userId) => {
   try {
     const data = { id, userId };
@@ -111,18 +95,51 @@ const getModuleUser = async (client, id, userId) => {
     throw err;
   }
 }
+const getModuleUserByBlockId = async (client, blockId, userId) => {
+  try {
+    const data = { blockId, userId };
+    const module = await moduleEntity.getUser(client, data);
+    const { blocks } = await blockService.getBlocksUserByModuleId(client, module.id, userId);
+    module.blocks = blocks;
+    return { module };
+  } catch (err) {
+    throw err;
+  }
+}
+
+const checkFirstModuleEnabled = async (client, userId) => {
+  try {
+    const data = { userId, enable: true };
+    const modules = await moduleEntity.listUser(client, data);
+    if (modules.length === 0) {
+      const data = { position: 1 };
+      const module = await moduleEntity.get(client, data);
+      const dataUserModule = {
+        id: uuid.v4(),
+        moduleId: module.id,
+        userId,
+        enable: true,
+        complete: false
+      };
+      await userModuleEntity.create(client, dataUserModule);
+    }
+  } catch (err) {
+    throw err;
+  }
+}
 
 module.exports = {
   getModules,
   getModule,
   getModuleByBlockId,
-  getModuleFirst,
   createModule,
   updateModule,
   deleteModule,
   deleteModules,
 
   getModulesUser,
-  getModulesUserEnable,
   getModuleUser,
+  getModuleUserByBlockId,
+
+  checkFirstModuleEnabled,
 }

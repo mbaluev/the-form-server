@@ -1,7 +1,9 @@
 const blockEntity = require("../entity/block");
+const userBlockEntity = require("../entity/userBlock");
 const materialService = require("../service/material");
 const questionService = require("../service/question");
 const taskService = require("../service/task");
+const uuid = require("uuid");
 
 const getBlocks = async (client, search) => {
   try {
@@ -24,15 +26,6 @@ const getBlocksByModuleId = async (client, moduleId, search) => {
 const getBlock = async (client, id) => {
   try {
     const data = { id };
-    const block = await blockEntity.get(client, data);
-    return { block };
-  } catch (err) {
-    throw err;
-  }
-}
-const getBlockFirst = async (client) => {
-  try {
-    const data = { position: 1 };
     const block = await blockEntity.get(client, data);
     return { block };
   } catch (err) {
@@ -97,15 +90,6 @@ const getBlocksUser = async (client, userId, search) => {
     throw err;
   }
 }
-const getBlocksUserEnable = async (client, userId, search) => {
-  try {
-    const data = { userId, enable: true, search };
-    const blocks = await blockEntity.listUser(client, data);
-    return { blocks };
-  } catch (err) {
-    throw err;
-  }
-}
 const getBlocksUserByModuleId = async (client, moduleId, userId, search) => {
   try {
     const data = { moduleId, userId, search };
@@ -125,18 +109,42 @@ const getBlockUser = async (client, id, userId) => {
   }
 }
 
+const checkFirstBlockEnabled = async (client, userId) => {
+  try {
+    const data = { userId, enable: true };
+    const blocks = await blockEntity.listUser(client, data);
+    if (blocks.length === 0) {
+      const data = { position: 1 };
+      const block = await blockEntity.get(client, data);
+      const dataUserBlock = {
+        id: uuid.v4(),
+        blockId: block.id,
+        userId,
+        enable: true,
+        complete: false,
+        completeMaterials: false,
+        completeQuestions: false,
+        completeTasks: false
+      };
+      await userBlockEntity.create(client, dataUserBlock);
+    }
+  } catch (err) {
+    throw err;
+  }
+}
+
 module.exports = {
   getBlocks,
   getBlocksByModuleId,
   getBlock,
-  getBlockFirst,
   createBlock,
   updateBlock,
   deleteBlock,
   deleteBlocks,
 
   getBlocksUser,
-  getBlocksUserEnable,
   getBlocksUserByModuleId,
-  getBlockUser
+  getBlockUser,
+
+  checkFirstBlockEnabled,
 }

@@ -9,7 +9,7 @@ const getQuestionsByBlockId = async (client, blockId) => {
     const questionsList = await questionEntity.list(client, data);
     const questions = [];
     for (const questionItem of questionsList) {
-      const { question } = getQuestion(client, questionItem.id);
+      const { question } = await getQuestion(client, questionItem.id);
       questions.push(question);
     }
     return { questions };

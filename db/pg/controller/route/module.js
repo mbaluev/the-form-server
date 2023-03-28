@@ -3,8 +3,6 @@ const pool = require("../../utils/pool");
 const handlers = require("../../utils/handlers");
 const moduleService = require("../service/module");
 const blockService = require("../service/block");
-const userModuleEntity = require("../entity/userModule");
-const userBlockEntity = require("../entity/userBlock");
 
 const getModules = async (req, res) => {
   const client = await pool.connect();
@@ -33,7 +31,7 @@ const getModule = async (req, res) => {
     const id = req.params.id;
     const blockId = req.body.blockId;
     const { module } = blockId ?
-      await moduleService.getModuleByBlockId(client, blockId):
+      await moduleService.getModuleByBlockId(client, blockId) :
       await moduleService.getModule(client, id);
 
     await client.query('COMMIT')
@@ -143,8 +141,11 @@ const getModuleUser = async (req, res) => {
     await client.query('BEGIN')
 
     const id = req.params.id;
+    const blockId = req.body.blockId;
     const userId = req.user.id;
-    const { module } = await moduleService.getModuleUser(client, id, userId)
+    const { module } = blockId ?
+      await moduleService.getModuleUserByBlockId(client, blockId, userId) :
+      await moduleService.getModuleUser(client, id, userId)
 
     await client.query('COMMIT')
     res.status(200).send({
@@ -164,37 +165,8 @@ const userMiddleware = async (req, res, next) => {
     await client.query('BEGIN')
 
     const userId = req.user.id;
-
-    // check first module enabled
-    const { modules } = await moduleService.getModulesUserEnable(client, userId)
-    if (modules.length === 0) {
-      const { module } = await moduleService.getModuleFirst(client);
-      const dataUserModule = {
-        id: uuid.v4(),
-        moduleId: module.id,
-        userId,
-        enable: true,
-        complete: false
-      };
-      await userModuleEntity.create(client, dataUserModule);
-    }
-
-    // check first block enabled
-    const { blocks } = await blockService.getBlocksUserEnable(client, userId)
-    if (blocks.length === 0) {
-      const { block } = await blockService.getBlockFirst(client);
-      const dataUserBlock = {
-        id: uuid.v4(),
-        blockId: block.id,
-        userId,
-        enable: true,
-        complete: false,
-        completeMaterials: false,
-        completeQuestions: false,
-        completeTasks: false
-      };
-      await userBlockEntity.create(client, dataUserBlock);
-    }
+    await moduleService.checkFirstModuleEnabled(client, userId);
+    await blockService.checkFirstBlockEnabled(client, userId);
 
     await client.query('COMMIT')
     next()

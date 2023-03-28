@@ -139,10 +139,10 @@ const getUser = async (client, data) => {
       FROM blocks b
       INNER JOIN modules m ON m.id = b.moduleId 
       LEFT JOIN userBlocks ub ON ub.blockId = b.id AND ub.userId = $1
-      WHERE id = $2`
+      WHERE b.id = $2`
     const params1 = [userId, id];
     const res1 = await client.query(query1, params1);
-    return res1.rows.map(mapRow)[0];
+    return res1.rows.map(mapRowUser)[0];
   } catch (err) {
     throw err;
   }

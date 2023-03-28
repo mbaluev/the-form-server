@@ -95,14 +95,27 @@ const listUser = async (client, data) => {
 const getUser = async (client, data) => {
   try {
     const id = data.id;
+    const blockId = data.blockId;
     const userId = data.userId;
-    const query1 = `SELECT m.id, m.title, m.name, m.position, um.enable, um.complete 
-      FROM modules m
-      LEFT JOIN userModules um ON um.moduleId = m.id AND um.userId = $1
-      WHERE m.id = $2`
-    const params1 = [userId, id];
-    const res1 = await client.query(query1, params1);
-    return res1.rows[0];
+    if (id) {
+      const query1 = `SELECT m.id, m.title, m.name, m.position, um.enable, um.complete 
+        FROM modules m
+        LEFT JOIN userModules um ON um.moduleId = m.id AND um.userId = $1
+        WHERE m.id = $2`
+      const params1 = [userId, id];
+      const res1 = await client.query(query1, params1);
+      return res1.rows[0];
+    }
+    if (blockId) {
+      const query1 = `SELECT m.id, m.title, m.name, m.position, um.enable, um.complete 
+        FROM modules m
+        INNER JOIN blocks b ON b.moduleId = m.id
+        LEFT JOIN userModules um ON um.moduleId = m.id AND um.userId = $1
+        WHERE b.id = $2`
+      const params1 = [userId, blockId];
+      const res1 = await client.query(query1, params1);
+      return res1.rows[0];
+    }
   } catch (err) {
     throw err;
   }
