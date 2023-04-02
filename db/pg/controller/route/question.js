@@ -51,7 +51,8 @@ const createQuestion = async (req, res) => {
     const dataQuestion = {
       id: uuid.v4(),
       blockId: req.body.blockId,
-      title: req.body.title
+      title: req.body.title,
+      position: req.body.position
     };
     const dataOptions = req.body.options;
     const dataOptionsCorrectId = req.body.optionsCorrectId;
@@ -79,7 +80,8 @@ const updateQuestion = async (req, res) => {
     const dataQuestion = {
       id: req.params.id,
       blockId: req.body.blockId,
-      title: req.body.title
+      title: req.body.title,
+      position: req.body.position
     };
     const { question } = await questionService.updateQuestion(client, dataQuestion, dataOptions, dataOptionsCorrectId);
 
@@ -115,10 +117,34 @@ const deleteQuestions = async (req, res) => {
   }
 }
 
+const getQuestionsUser = async (req, res) => {
+  const client = await pool.connect();
+  try {
+    handlers.validateRequest(req, 'blockId');
+    await client.query('BEGIN');
+
+    const blockId = req.body.blockId;
+    const userId = req.user.id;
+    const { questions } = await questionService.getQuestionsByBlockIdUser(client, blockId, userId);
+
+    await client.query('COMMIT');
+    res.status(200).send({
+      success: true,
+      data: questions
+    });
+  } catch (err) {
+    await handlers.errorHandler(client, res, err);
+  } finally {
+    handlers.finallyHandler(client);
+  }
+}
+
 module.exports = {
   getQuestions,
   getQuestion,
   createQuestion,
   updateQuestion,
-  deleteQuestions
+  deleteQuestions,
+
+  getQuestionsUser
 }

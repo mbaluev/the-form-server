@@ -106,6 +106,7 @@ const init = async () => {
       id TEXT PRIMARY KEY,
       blockId TEXT NOT NULL,
       title TEXT NOT NULL,
+      position INT NOT NULL,
       FOREIGN KEY(blockId) REFERENCES blocks(id)
     )`;
     await client.query(query);
@@ -163,6 +164,19 @@ const init = async () => {
       userId TEXT NOT NULL,
       complete BOOL NOT NULL,
       FOREIGN KEY(materialId) REFERENCES materials(id),
+      FOREIGN KEY(userId) REFERENCES users(id)
+    )`;
+    await client.query(query);
+
+    // userQuestionAnswers
+    query = `CREATE TABLE IF NOT EXISTS userQuestionAnswers (
+      id TEXT PRIMARY KEY,
+      questionId TEXT NOT NULL,
+      questionAnswerId TEXT NOT NULL,
+      userId TEXT NOT NULL,
+      correct BOOL NOT NULL,      
+      FOREIGN KEY(questionId) REFERENCES questions(id),
+      FOREIGN KEY(questionAnswerId) REFERENCES questionAnswers(id),
       FOREIGN KEY(userId) REFERENCES users(id)
     )`;
     await client.query(query);

@@ -1,6 +1,7 @@
 const questionEntity = require("../entity/question");
 const questionAnswerEntity = require("../entity/questionAnswer");
 const questionAnswerCorrectEntity = require("../entity/questionAnswerCorrect");
+const userQuestionAnswer = require("../entity/userQuestionAnswer");
 const uuid = require("uuid");
 
 const getQuestionsByBlockId = async (client, blockId) => {
@@ -136,11 +137,36 @@ const deleteQuestions = async (client, ids) => {
   }
 }
 
+const getQuestionsByBlockIdUser = async (client, blockId, userId) => {
+  try {
+    const data = { blockId };
+    const questionsList = await questionEntity.list(client, data);
+    const questions = [];
+    for (const questionItem of questionsList) {
+      const dataOptions = {
+        questionId: questionItem.id,
+      }
+      const dataAnswers = {
+        questionId: questionItem.id,
+        userId: userId
+      }
+      questionItem.options = await questionAnswerEntity.list(client, dataOptions);
+      questionItem.answers = await userQuestionAnswer.list(client, dataAnswers);
+      questions.push(questionItem);
+    }
+    return { questions };
+  } catch (err) {
+    throw err;
+  }
+}
+
 module.exports = {
   getQuestionsByBlockId,
   getQuestion,
   createQuestion,
   updateQuestion,
   deleteQuestion,
-  deleteQuestions
+  deleteQuestions,
+
+  getQuestionsByBlockIdUser
 }
