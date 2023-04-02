@@ -19,10 +19,21 @@ const list = async (client) => {
 const get = async (client, data) => {
   try {
     const id = data.id;
-    const query1 = `SELECT id, materialid, userid, complete FROM userMaterials WHERE id = $1`
-    const params1 = [id]
-    const res1 = await client.query(query1, params1);
-    return res1.rows.map(mapRow)[0];
+    const materialId = data.materialId;
+    const userId = data.userId;
+    if (id) {
+      const query1 = `SELECT id, materialid, userid, complete FROM userMaterials WHERE id = $1`
+      const params1 = [id]
+      const res1 = await client.query(query1, params1);
+      return res1.rows.map(mapRow)[0];
+    }
+    if (materialId && userId) {
+      const query1 = `SELECT id, materialid, userid, complete 
+        FROM userMaterials WHERE materialid = $1 and userid = $2`
+      const params1 = [materialId, userId]
+      const res1 = await client.query(query1, params1);
+      return res1.rows.map(mapRow)[0];
+    }
   } catch (err) {
     throw err;
   }
@@ -43,7 +54,7 @@ const update = async (client, data) => {
       materialid = COALESCE($1,materialid), 
       userid = COALESCE($2,userid), 
       complete = COALESCE($3,complete)
-      WHERE id = $5`;
+      WHERE id = $4`;
     const params1 = [data.materialId, data.userId, data.complete, data.id];
     await client.query(query1, params1);
     return data;

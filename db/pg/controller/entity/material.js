@@ -2,7 +2,15 @@ const mapRow = (row) => {
   return {
     id: row.id,
     blockId: row.blockid,
-    documentId: row.documentid
+    documentId: row.documentid,
+  }
+}
+const mapRowUser = (row) => {
+  return {
+    id: row.id,
+    blockId: row.blockid,
+    documentId: row.documentid,
+    complete: row.complete || false,
   }
 }
 
@@ -67,10 +75,36 @@ const del = async (client, id) => {
   }
 }
 
+const listUser = async (client, data) => {
+  try {
+    const userId = data.userId;
+    const blockId = data.blockId;
+    if (blockId) {
+      const query1 = `SELECT m.id, m.blockid, m.documentid, um.complete 
+        FROM materials m
+        LEFT JOIN userMaterials um ON um.materialId = m.id AND um.userId = $1
+        WHERE m.blockid = $2`
+      const params1 = [userId, blockId];
+      const res1 = await client.query(query1, params1);
+      return res1.rows.map(mapRowUser);
+    }
+    const query1 = `SELECT m.id, m.blockid, m.documentid, um.complete
+      FROM materials m
+      LEFT JOIN userMaterials um ON um.materialId = m.id AND um.userId = $1`
+    const params1 = [userId];
+    const res1 = await client.query(query1, params1);
+    return res1.rows.map(mapRowUser);
+  } catch (err) {
+    throw err;
+  }
+}
+
 module.exports = {
   list,
   get,
   create,
   update,
-  del
+  del,
+
+  listUser
 }

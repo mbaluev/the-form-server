@@ -124,10 +124,54 @@ const deleteMaterials = async (req, res) => {
   }
 }
 
+const getMaterialsUser = async (req, res) => {
+  const client = await pool.connect();
+  try {
+    handlers.validateRequest(req, 'blockId');
+    await client.query('BEGIN')
+
+    const blockId = req.body.blockId;
+    const userId = req.user.id;
+    const { materials } = await materialService.getMaterialsByBlockIdUser(client, blockId, userId);
+
+    await client.query('COMMIT')
+    res.status(200).send({
+      success: true,
+      data: materials
+    });
+  } catch (err) {
+    await handlers.errorHandler(client, res, err);
+  } finally {
+    handlers.finallyHandler(client);
+  }
+}
+const updateMaterialUser = async (req, res) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN')
+
+    const id = req.params.id;
+    const userId = req.user.id;
+    await materialService.updateMaterialUser(client, id, userId);
+
+    await client.query('COMMIT')
+    res.status(200).send({
+      success: true
+    });
+  } catch (err) {
+    await handlers.errorHandler(client, res, err);
+  } finally {
+    handlers.finallyHandler(client);
+  }
+}
+
 module.exports = {
   getMaterials,
   getMaterial,
   createMaterial,
   updateMaterial,
-  deleteMaterials
+  deleteMaterials,
+
+  getMaterialsUser,
+  updateMaterialUser
 }

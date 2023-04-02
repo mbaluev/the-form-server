@@ -1,7 +1,10 @@
 const materialEntity = require("../entity/material");
+const userMaterialEntity = require("../entity/userMaterial");
 const documentEntity = require("../entity/document");
 const fileEntity = require("../entity/file");
+const userBlockEntity = require("../entity/userBlock");
 const fs = require("fs");
+const uuid = require("uuid");
 
 const getMaterialsByBlockId = async (client, blockId) => {
   try {
@@ -94,11 +97,65 @@ const deleteMaterials = async (client, ids) => {
   }
 }
 
+const getMaterialsByBlockIdUser = async (client, blockId, userId) => {
+  try {
+    const data = { blockId, userId };
+    const materialsList = await materialEntity.listUser(client, data);
+    const materials = [];
+    for (const { documentId, ...material } of materialsList) {
+      const { fileId, ...document } = await documentEntity.get(client, { id: documentId });
+      document.file = await fileEntity.get(client, { id: fileId });
+      material.document = document;
+      materials.push(material);
+    }
+    return { materials };
+  } catch (err) {
+    throw err;
+  }
+}
+const updateMaterialUser = async (client, id, userId) => {
+  try {
+    // update userMaterials
+    const data = { materialId: id, userId };
+    const userMaterial = await userMaterialEntity.get(client, data);
+    if (userMaterial) {
+      const dataUserMaterial = {
+        id: userMaterial.id,
+        materialId: userMaterial.materialId,
+        userId: userMaterial.userId,
+        complete: true
+      };
+      await userMaterialEntity.update(client, dataUserMaterial);
+    } else {
+      const dataUserMaterial = {
+        id: uuid.v4(),
+        materialId: id,
+        userId: userId,
+        complete: true
+      };
+      await userMaterialEntity.create(client, dataUserMaterial)
+    }
+
+    // update userBlocks.completeMaterials
+    const material = await materialEntity.get(client, { id })
+    const { materials } = await getMaterialsByBlockIdUser(client, material.blockId, userId);
+    const completeMaterials = materials.reduce((prev, curr) => prev && curr.complete, true);
+    const userBlock = await userBlockEntity.get(client, { blockId: material.blockId });
+    const dataUserBlock = { id: userBlock.id, completeMaterials }
+    await userBlockEntity.update(client, dataUserBlock)
+  } catch (err) {
+    throw err;
+  }
+}
+
 module.exports = {
   getMaterialsByBlockId,
   getMaterial,
   createMaterial,
   updateMaterial,
   deleteMaterial,
-  deleteMaterials
+  deleteMaterials,
+
+  getMaterialsByBlockIdUser,
+  updateMaterialUser
 }
