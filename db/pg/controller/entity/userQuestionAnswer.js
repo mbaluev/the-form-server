@@ -1,26 +1,25 @@
 const mapRow = (row) => {
   return {
     id: row.id,
-    questionId: row.questionid,
-    questionAnswerId: row.questionanswerid,
-    userId: row.userid,
-    correct: row.correct
+    optionId: row.optionid,
+    userId: row.userid
   }
 }
 
 const list = async (client, data) => {
   try {
-    const questionId = data.questionId;
-    const userId = data.userId;
+    const { questionId, userId } = data
     if (questionId) {
-      const query1 = `SELECT id, questionid, questionanswerid, userid, correct
-        FROM userQuestionAnswers
-        WHERE questionid = $1 AND userid = $2`
+      const query1 = `SELECT uqa.id, uqa.optionid, uqa.userid 
+        FROM userQuestionAnswers uqa
+        INNER JOIN questionOptions qo ON qo.id = uqa.optionid
+        INNER JOIN questions as q ON q.id = qo.questionid
+        WHERE q.id = $1 AND uqa.userid = $2`
       const params1 = [questionId, userId];
       const res1 = await client.query(query1, params1);
       return res1.rows.map(mapRow);
     }
-    const query1 = `SELECT id, questionid, questionanswerid, userid, correct
+    const query1 = `SELECT id, optionid, userid 
       FROM userQuestionAnswers
       WHERE userid = $1`
     const params1 = [userId];
@@ -33,8 +32,7 @@ const list = async (client, data) => {
 const get = async (client, data) => {
   try {
     const id = data.id;
-    const query1 = `SELECT id, questionid, questionanswerid, userid, correct
-      FROM userQuestionAnswers WHERE id = $1`
+    const query1 = `SELECT id, optionid, userid FROM userQuestionAnswers WHERE id = $1`
     const params1 = [id]
     const res1 = await client.query(query1, params1);
     return res1.rows.map(mapRow)[0];
@@ -44,9 +42,8 @@ const get = async (client, data) => {
 }
 const create = async (client, data) => {
   try {
-    const query1 = `INSERT INTO userQuestionAnswers (id, questionid, questionanswerid, userid, correct)
-      VALUES ($1,$2,$3,$4,$5)`;
-    const params1 = [data.id, data.questionId, data.questionAnswerId, data.userId, data.correct];
+    const query1 = 'INSERT INTO userQuestionAnswers (id, optionid, userid) VALUES ($1,$2,$3)';
+    const params1 = [data.id, data.optionId, data.userId];
     await client.query(query1, params1);
     return data;
   } catch (err) {
@@ -56,12 +53,10 @@ const create = async (client, data) => {
 const update = async (client, data) => {
   try {
     const query1 = `UPDATE userQuestionAnswers SET 
-      questionid = COALESCE($1,questionid), 
-      questionanswerid = COALESCE($2,questionanswerid),
-      userid = COALESCE($3,userid),
-      correct = COALESCE($4,correct)
-      WHERE id = $5`;
-    const params1 = [data.questionId, data.questionAnswerId, data.userId, data.correct , data.id];
+      optionid = COALESCE($1,optionid), 
+      userid = COALESCE($2,userid)
+      WHERE id = $3`;
+    const params1 = [data.optionId, data.userId, data.id];
     await client.query(query1, params1);
     return data;
   } catch (err) {
@@ -78,11 +73,22 @@ const del = async (client, id) => {
     throw err;
   }
 }
+const delByUserId = async (client, userId) => {
+  try {
+    const query1 = `DELETE FROM userQuestionAnswers WHERE userid = $1`;
+    const params1 = [userId];
+    await client.query(query1, params1);
+    return true;
+  } catch (err) {
+    throw err;
+  }
+}
 
 module.exports = {
   list,
   get,
   create,
   update,
-  del
+  del,
+  delByUserId
 }
