@@ -10,7 +10,7 @@ router.post("/create", verifyAdmin, route.createBlock);
 router.patch("/update/:id", verifyAdmin, route.updateBlock);
 router.delete("/delete", verifyAdmin, route.deleteBlocks);
 
-router.post("/list/user", verifyStudent, route.getBlocksUser);
-router.post("/get/user/:id", verifyStudent, route.getBlockUser);
+router.post("/user/list", verifyStudent, route.getBlocksUser);
+router.post("/user/get/:id", verifyStudent, route.getBlockUser);
 
 module.exports = router

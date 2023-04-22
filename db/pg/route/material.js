@@ -10,7 +10,7 @@ router.post("/create", verifyAdmin, route.createMaterial);
 router.patch("/update/:id", verifyAdmin, route.updateMaterial);
 router.delete("/delete", verifyAdmin, route.deleteMaterials);
 
-router.post("/list/user", verifyStudent, route.getMaterialsUser);
-router.post("/update/user/:id", verifyStudent, route.updateMaterialUser);
+router.post("/user/list", verifyStudent, route.getMaterialsUser);
+router.post("/user/update/:id", verifyStudent, route.updateMaterialUser);
 
 module.exports = router

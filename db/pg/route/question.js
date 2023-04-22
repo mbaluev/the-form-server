@@ -10,6 +10,7 @@ router.post("/create", verifyAdmin, route.createQuestion);
 router.patch("/update/:id", verifyAdmin, route.updateQuestion);
 router.delete("/delete", verifyAdmin, route.deleteQuestions);
 
-router.post("/list/user", verifyStudent, route.getQuestionsUser);
+router.post("/user/list", verifyStudent, route.getQuestionsUser);
+router.post("/user/check", verifyStudent, route.checkQuestionsUser);
 
 module.exports = router

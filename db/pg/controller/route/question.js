@@ -136,6 +136,22 @@ const getQuestionsUser = async (req, res) => {
     handlers.finallyHandler(client);
   }
 }
+const checkQuestionsUser = async (req, res) => {
+  const client = await pool.connect();
+  try {
+    handlers.validateRequest(req, 'blockId');
+    handlers.validateRequest(req, 'questions');
+    // const blockId = req.body.blockId;
+    // const questions = req.body.questions;
+    // const userId = req.user.id;
+
+    await getQuestionsUser(req, res);
+  } catch (err) {
+    await handlers.errorHandler(client, res, err);
+  } finally {
+    handlers.finallyHandler(client);
+  }
+}
 
 module.exports = {
   getQuestions,
@@ -144,5 +160,6 @@ module.exports = {
   updateQuestion,
   deleteQuestions,
 
-  getQuestionsUser
+  getQuestionsUser,
+  checkQuestionsUser
 }
