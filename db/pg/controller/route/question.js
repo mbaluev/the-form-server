@@ -45,7 +45,7 @@ const getQuestion = async (req, res) => {
 const createQuestion = async (req, res) => {
   const client = await pool.connect();
   try {
-    handlers.validateRequest(req, 'blockId', 'title', 'options', 'optionsCorrectId');
+    handlers.validateRequest(req, 'blockId', 'title', 'options');
     await client.query('BEGIN');
 
     const dataQuestion = {
@@ -55,8 +55,7 @@ const createQuestion = async (req, res) => {
       position: req.body.position
     };
     const dataOptions = req.body.options;
-    const dataOptionsCorrectId = req.body.optionsCorrectId;
-    const { question } = await questionService.createQuestion(client, dataQuestion, dataOptions, dataOptionsCorrectId);
+    const { question } = await questionService.createQuestion(client, dataQuestion, dataOptions);
 
     await client.query('COMMIT');
     res.status(200).send({
@@ -72,18 +71,17 @@ const createQuestion = async (req, res) => {
 const updateQuestion = async (req, res) => {
   const client = await pool.connect();
   try {
-    handlers.validateRequest(req, 'blockId', 'title', 'options', 'optionsCorrectId');
+    handlers.validateRequest(req, 'blockId', 'title', 'options');
     await client.query('BEGIN')
 
     const dataOptions = req.body.options;
-    const dataOptionsCorrectId = req.body.optionsCorrectId;
     const dataQuestion = {
       id: req.params.id,
       blockId: req.body.blockId,
       title: req.body.title,
       position: req.body.position
     };
-    const { question } = await questionService.updateQuestion(client, dataQuestion, dataOptions, dataOptionsCorrectId);
+    const { question } = await questionService.updateQuestion(client, dataQuestion, dataOptions);
 
     await client.query('COMMIT');
     res.status(200).send({

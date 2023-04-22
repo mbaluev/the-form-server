@@ -1,8 +1,6 @@
 const questionEntity = require("../entity/question");
-const questionAnswerEntity = require("../entity/questionAnswer");
-const questionAnswerCorrectEntity = require("../entity/questionAnswerCorrect");
-const userQuestionAnswer = require("../entity/userQuestionAnswer");
-const uuid = require("uuid");
+const questionOptionEntity = require("../entity/questionOption");
+const userQuestionAnswerEntity = require("../entity/userQuestionAnswer");
 
 const getQuestionsByBlockId = async (client, blockId) => {
   try {
@@ -22,88 +20,53 @@ const getQuestion = async (client, id) => {
   try {
     const data = { id };
     const question = await questionEntity.get(client, data);
-    const options = await questionAnswerEntity.list(client, { questionId: question.id });
-    const optionsCorrectId = await questionAnswerCorrectEntity.list(client, { questionId: question.id });
-    question.options = options.map(option => {
-      return {
-        id: option.id,
-        title: option.title
-      }
-    });
-    question.optionsCorrectId = optionsCorrectId.map(option => option.questionAnswerId);
+    const dataOptions = { questionId: question.id };
+    question.options = await questionOptionEntity.list(client, dataOptions);
     return { question };
   } catch (err) {
     throw err;
   }
 }
-const createQuestion = async (client, dataQuestion, dataOptions, dataOptionsCorrectId) => {
+const createQuestion = async (client, dataQuestion, dataOptions) => {
   try {
     const question = await questionEntity.create(client, dataQuestion);
+    question.options = [];
     for (const dataOption of dataOptions) {
-      const option = {...dataOption, questionId: question.id }
-      await questionAnswerEntity.create(client, option);
+      dataOption.questionId = question.id;
+      const option = await questionOptionEntity.create(client, dataOption);
+      question.options.push(option);
     }
-    for (const dataOptionCorrectId of dataOptionsCorrectId) {
-      const optionCorrect = {
-        id: uuid.v4(),
-        questionId: question.id,
-        questionAnswerId: dataOptionCorrectId
-      }
-      await questionAnswerCorrectEntity.create(client, optionCorrect);
-    }
-    question.options = dataOptions.map(({id, ...option }) => option);
-    question.optionsCorrectId = dataOptionsCorrectId;
     return { question };
   } catch (err) {
     throw err;
   }
 }
-const updateQuestion = async (client, question, options, optionsCorrectId) => {
+const updateQuestion = async (client, question, options) => {
   try {
     await questionEntity.update(client, question);
 
     // options create update
-    const optionsExist = await questionAnswerEntity.list(client, { questionId: question.id });
+    const optionsExist = await questionOptionEntity.list(client, { questionId: question.id });
     const optionsCreate = options.filter(option => !optionsExist.find(optionExist => option.id === optionExist.id));
     const optionsUpdate = options.filter(option => optionsExist.find(optionExist => option.id === optionExist.id));
     const promisesOptionsCreate = optionsCreate.map((option) => {
       const dataOption = { ...option, questionId: question.id };
-      return questionAnswerEntity.create(client, dataOption);
+      return questionOptionEntity.create(client, dataOption);
     })
     await Promise.all(promisesOptionsCreate);
     const promisesOptionsUpdate = optionsUpdate.map((option) => {
-      return questionAnswerEntity.update(client, option );
+      return questionOptionEntity.update(client, option );
     })
     await Promise.all(promisesOptionsUpdate);
-
-    // optionsCorrectId create delete
-    const optionsCorrectIdExist = await questionAnswerCorrectEntity.list(client, { questionId: question.id });
-    const optionsCorrectIdCreate = optionsCorrectId.filter(d => !optionsCorrectIdExist.find(dExist => d === dExist.questionAnswerId));
-    const optionsCorrectIdDelete = optionsCorrectIdExist.filter(dExist => !optionsCorrectId.find(d => d === dExist.questionAnswerId));
-    const promisesOptionsCorrectIdCreate = optionsCorrectIdCreate.map((optionCorrectId) => {
-      const dataOptionCorrect = {
-        id: uuid.v4(),
-        questionId: question.id,
-        questionAnswerId: optionCorrectId
-      }
-      return questionAnswerCorrectEntity.create(client, dataOptionCorrect);
-    })
-    await Promise.all(promisesOptionsCorrectIdCreate);
-    const promisesOptionsCorrectIdDelete = optionsCorrectIdDelete.map((option) => {
-      return questionAnswerCorrectEntity.del(client, option.id );
-    })
-    await Promise.all(promisesOptionsCorrectIdDelete);
 
     // options delete
     const optionsDelete = optionsExist.filter(optionExist => !options.find(option => option.id === optionExist.id));
     const promisesOptionsDelete = optionsDelete.map((option) => {
-      return questionAnswerEntity.del(client, option.id );
+      return questionOptionEntity.del(client, option.id );
     })
     await Promise.all(promisesOptionsDelete);
 
-    question.options = options.map(({id, ...option }) => option);
-    question.optionsCorrectId = optionsCorrectId;
-
+    question.options = options;
     return { question };
   } catch (err) {
     throw err;
@@ -111,16 +74,12 @@ const updateQuestion = async (client, question, options, optionsCorrectId) => {
 }
 const deleteQuestion = async (client, id) => {
   try {
-    // get info
-    const options = await questionAnswerEntity.list(client, { questionId: id });
-    const optionsCorrect = await questionAnswerCorrectEntity.list(client, { questionId: id });
+    // get options
+    const options = await questionOptionEntity.list(client, { questionId: id });
 
     // delete
-    for (const optionCorrect of optionsCorrect) {
-      await questionAnswerCorrectEntity.del(client, optionCorrect.id)
-    }
     for (const option of options) {
-      await questionAnswerEntity.del(client, option.id)
+      await questionOptionEntity.del(client, option.id)
     }
     await questionEntity.del(client, id)
   } catch (err) {
@@ -139,19 +98,13 @@ const deleteQuestions = async (client, ids) => {
 
 const getQuestionsByBlockIdUser = async (client, blockId, userId) => {
   try {
-    const data = { blockId };
-    const questionsList = await questionEntity.list(client, data);
+    const data = { blockId, userId };
+    const questionsList = await questionEntity.listUser(client, data);
     const questions = [];
     for (const questionItem of questionsList) {
-      const dataOptions = {
-        questionId: questionItem.id,
-      }
-      const dataAnswers = {
-        questionId: questionItem.id,
-        userId: userId
-      }
-      questionItem.options = await questionAnswerEntity.list(client, dataOptions);
-      questionItem.answers = await userQuestionAnswer.list(client, dataAnswers);
+      const dataOptions = { questionId: questionItem.id, userId }
+      questionItem.options = await questionOptionEntity.listUser(client, dataOptions);
+      questionItem.answers = await userQuestionAnswerEntity.list(client, dataOptions);
       questions.push(questionItem);
     }
     return { questions };

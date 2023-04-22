@@ -6,6 +6,15 @@ const mapRow = (row) => {
     position: row.position
   }
 }
+const mapRowUser = (row) => {
+  return {
+    id: row.id,
+    blockId: row.blockid,
+    title: row.title,
+    position: row.position,
+    complete: row.complete,
+  }
+}
 
 const list = async (client, data) => {
   try {
@@ -53,8 +62,8 @@ const update = async (client, data) => {
     const query1 = `UPDATE questions SET 
       blockid = COALESCE($1,blockid), 
       title = COALESCE($2,title),
-      position = COALESCE($2,position)
-      WHERE id = $3`;
+      position = COALESCE($3,position)
+      WHERE id = $4`;
     const params1 = [data.blockId, data.title, data.position, data.id];
     await client.query(query1, params1);
     return data;
@@ -73,10 +82,36 @@ const del = async (client, id) => {
   }
 }
 
+const listUser = async (client, data) => {
+  try {
+    const userId = data.userId;
+    const blockId = data.blockId;
+    if (blockId) {
+      const query1 = `SELECT q.id, q.blockid, q.title, q.position, uq.complete 
+        FROM questions q
+        LEFT JOIN userQuestions uq ON uq.questionId = q.id AND uq.userId = $1
+        WHERE q.blockid = $2`
+      const params1 = [userId, blockId];
+      const res1 = await client.query(query1, params1);
+      return res1.rows.map(mapRowUser);
+    }
+    const query1 = `SELECT q.id, q.blockid, q.title, q.position, uq.complete
+      FROM questions q
+      LEFT JOIN userQuestions uq ON uq.questionId = q.id AND uq.userId = $1`
+    const params1 = [userId];
+    const res1 = await client.query(query1, params1);
+    return res1.rows.map(mapRowUser);
+  } catch (err) {
+    throw err;
+  }
+}
+
 module.exports = {
   list,
   get,
   create,
   update,
-  del
+  del,
+
+  listUser
 }

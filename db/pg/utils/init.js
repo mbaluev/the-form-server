@@ -111,22 +111,13 @@ const init = async () => {
     )`;
     await client.query(query);
 
-    // questionAnswers
-    query = `CREATE TABLE IF NOT EXISTS questionAnswers (
+    // questionOptions
+    query = `CREATE TABLE IF NOT EXISTS questionOptions (
       id TEXT PRIMARY KEY,
       questionId TEXT NOT NULL,
       title TEXT NOT NULL,
+      correct BOOL NOT NULL,
       FOREIGN KEY(questionId) REFERENCES questions(id)
-    )`;
-    await client.query(query);
-
-    // questionAnswersCorrect
-    query = `CREATE TABLE IF NOT EXISTS questionAnswersCorrect (
-      id TEXT PRIMARY KEY,
-      questionId TEXT NOT NULL,
-      questionAnswerId TEXT NOT NULL,
-      FOREIGN KEY(questionId) REFERENCES questions(id),
-      FOREIGN KEY(questionAnswerId) REFERENCES questionAnswers(id)
     )`;
     await client.query(query);
 
@@ -168,15 +159,23 @@ const init = async () => {
     )`;
     await client.query(query);
 
+    // userQuestions
+    query = `CREATE TABLE IF NOT EXISTS userQuestions (
+      id TEXT PRIMARY KEY,
+      questionId TEXT NOT NULL,
+      userId TEXT NOT NULL,
+      complete BOOL NULL,      
+      FOREIGN KEY(questionId) REFERENCES questions(id),
+      FOREIGN KEY(userId) REFERENCES users(id)
+    )`;
+    await client.query(query);
+
     // userQuestionAnswers
     query = `CREATE TABLE IF NOT EXISTS userQuestionAnswers (
       id TEXT PRIMARY KEY,
-      questionId TEXT NOT NULL,
-      questionAnswerId TEXT NOT NULL,
+      optionId TEXT NOT NULL,
       userId TEXT NOT NULL,
-      correct BOOL NOT NULL,      
-      FOREIGN KEY(questionId) REFERENCES questions(id),
-      FOREIGN KEY(questionAnswerId) REFERENCES questionAnswers(id),
+      FOREIGN KEY(optionId) REFERENCES questionOptions(id),
       FOREIGN KEY(userId) REFERENCES users(id)
     )`;
     await client.query(query);
