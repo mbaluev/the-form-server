@@ -141,10 +141,10 @@ const checkQuestionsUser = async (req, res) => {
   try {
     handlers.validateRequest(req, 'blockId');
     handlers.validateRequest(req, 'questions');
-    // const blockId = req.body.blockId;
-    // const questions = req.body.questions;
-    // const userId = req.user.id;
-
+    const blockId = req.body.blockId;
+    const questions = req.body.questions;
+    const userId = req.user.id;
+    await questionService.checkAnswersByBlockIdUser(client, blockId, questions, userId);
     await getQuestionsUser(req, res);
   } catch (err) {
     await handlers.errorHandler(client, res, err);

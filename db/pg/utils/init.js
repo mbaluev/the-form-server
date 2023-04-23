@@ -173,8 +173,10 @@ const init = async () => {
     // userQuestionAnswers
     query = `CREATE TABLE IF NOT EXISTS userQuestionAnswers (
       id TEXT PRIMARY KEY,
+      questionId TEXT NOT NULL,
       optionId TEXT NOT NULL,
       userId TEXT NOT NULL,
+      FOREIGN KEY(questionId) REFERENCES questions(id),
       FOREIGN KEY(optionId) REFERENCES questionOptions(id),
       FOREIGN KEY(userId) REFERENCES users(id)
     )`;

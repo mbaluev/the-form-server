@@ -44,7 +44,8 @@ const get = async (client, data) => {
 const create = async (client, data) => {
   try {
     const query1 = 'INSERT INTO questionOptions (id, questionid, title, correct) VALUES ($1,$2,$3,$4)';
-    const params1 = [data.id, data.questionId, data.title, data.correct];
+    const dataCorrect = data.correct || false
+    const params1 = [data.id, data.questionId, data.title, dataCorrect];
     await client.query(query1, params1);
     return data;
   } catch (err) {
@@ -58,7 +59,8 @@ const update = async (client, data) => {
       title = COALESCE($2,title),
       correct = COALESCE($3,correct)
       WHERE id = $4`;
-    const params1 = [data.questionId, data.title, data.correct, data.id];
+    const dataCorrect = data.correct || false
+    const params1 = [data.questionId, data.title, dataCorrect, data.id];
     await client.query(query1, params1);
     return data;
   } catch (err) {

@@ -19,7 +19,16 @@ const list = async (client) => {
 const get = async (client, data) => {
   try {
     const id = data.id;
-    const query1 = `SELECT id, questionid, userid, complete FROM userQuestions WHERE id = $1`
+    const questionId = data.questionId;
+    if (questionId) {
+      const query1 = `SELECT id, questionid, userid, complete FROM userQuestions 
+        WHERE questionid = $1`
+      const params1 = [questionId]
+      const res1 = await client.query(query1, params1);
+      return res1.rows.map(mapRow)[0];
+    }
+    const query1 = `SELECT id, questionid, userid, complete FROM userQuestions 
+      WHERE id = $1`
     const params1 = [id]
     const res1 = await client.query(query1, params1);
     return res1.rows.map(mapRow)[0];

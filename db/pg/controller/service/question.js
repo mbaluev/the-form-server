@@ -1,5 +1,8 @@
+const uuid = require("uuid");
 const questionEntity = require("../entity/question");
 const questionOptionEntity = require("../entity/questionOption");
+const userBlockEntity = require("../entity/userBlock");
+const userQuestionEntity = require("../entity/userQuestion");
 const userQuestionAnswerEntity = require("../entity/userQuestionAnswer");
 
 const getQuestionsByBlockId = async (client, blockId) => {
@@ -104,10 +107,60 @@ const getQuestionsByBlockIdUser = async (client, blockId, userId) => {
     for (const questionItem of questionsList) {
       const dataOptions = { questionId: questionItem.id, userId }
       questionItem.options = await questionOptionEntity.listUser(client, dataOptions);
-      questionItem.answers = await userQuestionAnswerEntity.list(client, dataOptions);
+      const answers = await userQuestionAnswerEntity.list(client, dataOptions);
+      questionItem.answers = answers.map(d => d.optionId);
       questions.push(questionItem);
     }
     return { questions };
+  } catch (err) {
+    throw err;
+  }
+}
+const checkAnswersByBlockIdUser = async (client, blockId, questions, userId) => {
+  try {
+    const { questions: questionsList } = await getQuestionsByBlockId(client, blockId);
+    const completes = [];
+    for (const questionUser of questions) {
+      const questionId = questionUser.id;
+      const answers = questionUser.answers;
+
+      // update userQuestions
+      const question = questionsList.find(d => d.id === questionId);
+      const optionsCorrect = question.options.filter(o => o.correct).map(o => o.id);
+      const complete = JSON.stringify(optionsCorrect) === JSON.stringify(answers);
+      completes.push(complete);
+      const userQuestion = await userQuestionEntity.get(client, { questionId });
+      if (userQuestion) {
+        const dataUserQuestion = { ...userQuestion, complete };
+        await userQuestionEntity.update(client, dataUserQuestion);
+      } else {
+        const dataUserQuestion = {
+          id: uuid.v4(),
+          questionId,
+          userId,
+          complete
+        };
+        await userQuestionEntity.create(client, dataUserQuestion);
+      }
+
+      // save answers
+      await userQuestionAnswerEntity.delByQuestionIdUserId(client, questionId, userId);
+      for (const answer of answers) {
+        const dataUserQuestionAnswer = {
+          id: uuid.v4(),
+          questionId,
+          optionId: answer,
+          userId,
+        }
+        await userQuestionAnswerEntity.create(client, dataUserQuestionAnswer);
+      }
+    }
+    // update block
+    if (completes.filter(complete => !complete).length === 0) {
+      const userBlock = await userBlockEntity.get(client, { blockId });
+      const dataUserBlock = { ...userBlock, completeQuestions: true }
+      await userBlockEntity.update(client, dataUserBlock);
+    }
   } catch (err) {
     throw err;
   }
@@ -121,5 +174,6 @@ module.exports = {
   deleteQuestion,
   deleteQuestions,
 
-  getQuestionsByBlockIdUser
+  getQuestionsByBlockIdUser,
+  checkAnswersByBlockIdUser
 }
