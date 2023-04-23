@@ -87,7 +87,7 @@ const updateTask = async (client, dataTask, dataDocument, dataFile, dataTaskAnsw
     const taskDocumentsCreate = taskDocuments.filter(d => !taskDocumentsExist.find(dExist => d.id === dExist.id));
     const taskDocumentsDelete = taskDocumentsExist.filter(dExist => !taskDocuments.find(d => d.id === dExist.id));
     const promisesDocumentsCreate = taskDocumentsCreate.map((answer) => {
-      const dataAnswer = { ...answer, taskId };
+      const dataAnswer = { ...answer, taskId: dataTask.id };
       return taskDocumentEntity.create(client, dataAnswer);
     })
     await Promise.all(promisesDocumentsCreate);
@@ -102,7 +102,7 @@ const updateTask = async (client, dataTask, dataDocument, dataFile, dataTaskAnsw
     const taskLinksCreate = taskLinks.filter(d => !taskLinksExist.find(dExist => d.id === dExist.id));
     const taskLinksDelete = taskLinksExist.filter(dExist => !taskLinks.find(d => d.id === dExist.id));
     const promisesLinksCreate = taskLinksCreate.map((answer) => {
-      const dataAnswer = { ...answer, taskId };
+      const dataAnswer = { ...answer, taskId: dataTask.id };
       return taskLinkEntity.create(client, dataAnswer);
     })
     await Promise.all(promisesLinksCreate);

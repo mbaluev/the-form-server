@@ -126,10 +126,34 @@ const deleteTasks = async (req, res) => {
   }
 }
 
+const getTasksUser = async (req, res) => {
+  const client = await pool.connect();
+  try {
+    handlers.validateRequest(req, 'blockId');
+    await client.query('BEGIN');
+
+    const blockId = req.body.blockId;
+    // const userId = req.user.id;
+    const { tasks } = await taskService.getTasksByBlockId(client, blockId);
+
+    await client.query('COMMIT')
+    res.status(200).send({
+      success: true,
+      data: tasks
+    });
+  } catch (err) {
+    await handlers.errorHandler(client, res, err);
+  } finally {
+    handlers.finallyHandler(client);
+  }
+}
+
 module.exports = {
   getTasks,
   getTask,
   createTask,
   updateTask,
-  deleteTasks
+  deleteTasks,
+
+  getTasksUser
 }
