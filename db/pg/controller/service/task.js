@@ -12,8 +12,23 @@ const getTasksByBlockId = async (client, blockId) => {
     const tasks = [];
     for (const { documentId, ...task } of tasksList) {
       const { fileId, ...document } = await documentEntity.get(client, { id: documentId });
+      const taskDocuments = (await taskDocumentEntity.list(client, { taskId: task.id })).map(d => {
+        return {
+          id: d.id,
+          title: d.title,
+          type: 'file'
+        }
+      });
+      const taskLinks = (await taskLinkEntity.list(client, { taskId: task.id })).map(d => {
+        return {
+          id: d.id,
+          title: d.title,
+          type: 'link'
+        }
+      });
       document.file = await fileEntity.get(client, { id: fileId });
       task.document = document;
+      task.taskAnswers = taskDocuments.concat(taskLinks);
       tasks.push(task);
     }
     return { tasks };
