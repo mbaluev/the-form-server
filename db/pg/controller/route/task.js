@@ -133,8 +133,8 @@ const getTasksUser = async (req, res) => {
     await client.query('BEGIN');
 
     const blockId = req.body.blockId;
-    // const userId = req.user.id;
-    const { tasks } = await taskService.getTasksByBlockId(client, blockId);
+    const userId = req.user.id;
+    const { tasks } = await taskService.getTasksUserByBlockId(client, userId, blockId);
 
     await client.query('COMMIT')
     res.status(200).send({

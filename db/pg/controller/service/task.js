@@ -171,11 +171,56 @@ const deleteTasks = async (client, ids) => {
   }
 }
 
+const getTasksUserByBlockId = async (client, userId, blockId) => {
+  try {
+    const data = { userId, blockId };
+    const tasksList = await taskEntity.list(client, data);
+    const tasks = [];
+    for (const { documentId, ...task } of tasksList) {
+      const { fileId, ...document } = await documentEntity.get(client, { id: documentId });
+      const taskDocuments = (await taskDocumentEntity.list(client, { taskId: task.id })).map(d => {
+        return {
+          id: d.id,
+          title: d.title,
+          type: 'file'
+        }
+      });
+      const taskLinks = (await taskLinkEntity.list(client, { taskId: task.id })).map(d => {
+        return {
+          id: d.id,
+          title: d.title,
+          type: 'link'
+        }
+      });
+      document.file = await fileEntity.get(client, { id: fileId });
+      task.document = document;
+      task.taskAnswers = taskDocuments.concat(taskLinks);
+
+      const min = 1;
+      const max = 4;
+      const status = Math.floor(Math.random() * (max - min + 1) + min);
+      switch (status) {
+        case 1: task.status = undefined; break;
+        case 2: task.status = 'done'; break;
+        case 3: task.status = 'sent'; break;
+        case 4: task.status = 'inbox'; break;
+      }
+
+      tasks.push(task);
+    }
+    return { tasks };
+  } catch (err) {
+    throw err;
+  }
+}
+
 module.exports = {
   getTasksByBlockId,
   getTask,
   createTask,
   updateTask,
   deleteTask,
-  deleteTasks
+  deleteTasks,
+
+  getTasksUserByBlockId
 }
