@@ -145,6 +145,26 @@ const getMaterialsUser = async (req, res) => {
     handlers.finallyHandler(client);
   }
 }
+const getMaterialUser = async (req, res) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN')
+
+    const id = req.params.id;
+    const userId = req.user.id;
+    const { material } = await materialService.getMaterialUser(client, id, userId);
+
+    await client.query('COMMIT')
+    res.status(200).send({
+      success: true,
+      data: material
+    });
+  } catch (err) {
+    await handlers.errorHandler(client, res, err);
+  } finally {
+    handlers.finallyHandler(client);
+  }
+}
 const updateMaterialUser = async (req, res) => {
   const client = await pool.connect();
   try {
@@ -173,5 +193,6 @@ module.exports = {
   deleteMaterials,
 
   getMaterialsUser,
+  getMaterialUser,
   updateMaterialUser
 }

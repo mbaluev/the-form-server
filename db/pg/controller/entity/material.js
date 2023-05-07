@@ -98,6 +98,21 @@ const listUser = async (client, data) => {
     throw err;
   }
 }
+const getUser = async (client, data) => {
+  try {
+    const id = data.id;
+    const userId = data.userId;
+    const query1 = `SELECT m.id, m.blockid, m.documentid, um.complete
+      FROM materials m
+      LEFT JOIN userMaterials um ON um.materialId = m.id AND um.userId = $1
+      WHERE m.id = $2`
+    const params1 = [userId, id]
+    const res1 = await client.query(query1, params1);
+    return res1.rows.map(mapRowUser)[0];
+  } catch (err) {
+    throw err;
+  }
+}
 
 module.exports = {
   list,
@@ -106,5 +121,6 @@ module.exports = {
   update,
   del,
 
-  listUser
+  listUser,
+  getUser
 }

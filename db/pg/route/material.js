@@ -11,6 +11,7 @@ router.patch("/update/:id", verifyAdmin, route.updateMaterial);
 router.delete("/delete", verifyAdmin, route.deleteMaterials);
 
 router.post("/user/list", verifyStudent, route.getMaterialsUser);
+router.get("/user/get/:id", verifyStudent, route.getMaterialUser);
 router.post("/user/update/:id", verifyStudent, route.updateMaterialUser);
 
 module.exports = router

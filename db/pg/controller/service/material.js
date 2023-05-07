@@ -113,6 +113,18 @@ const getMaterialsByBlockIdUser = async (client, blockId, userId) => {
     throw err;
   }
 }
+const getMaterialUser = async (client, id, userId) => {
+  try {
+    const data = { id, userId };
+    const { documentId, ...material } = await materialEntity.getUser(client, data);
+    const { fileId, ...document } = await documentEntity.get(client, { id: documentId });
+    document.file = await fileEntity.get(client, { id: fileId });
+    material.document = document;
+    return { material };
+  } catch (err) {
+    throw err;
+  }
+}
 const updateMaterialUser = async (client, id, userId) => {
   try {
     // update userMaterials
@@ -157,5 +169,6 @@ module.exports = {
   deleteMaterials,
 
   getMaterialsByBlockIdUser,
+  getMaterialUser,
   updateMaterialUser
 }
