@@ -182,6 +182,11 @@ const init = async () => {
     )`;
     await client.query(query);
 
+    // userTasks
+    // userTaskLinks
+    // userTaskDocuments
+    // userTaskHistory
+
     // create an initial user (username: qwe, password: qwe)
     // const { v4: guid } = require("uuid");
     // const firstname = 'qwe';

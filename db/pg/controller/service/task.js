@@ -5,30 +5,40 @@ const taskDocumentEntity = require("../entity/taskDocument");
 const taskLinkEntity = require("../entity/taskLink");
 const fs = require("fs");
 
+const getTaskInfo = async (client, taskData) => {
+  try {
+    const { documentId, ...task } = taskData
+    const { fileId, ...document } = await documentEntity.get(client, { id: documentId });
+    const taskDocuments = (await taskDocumentEntity.list(client, { taskId: task.id })).map(d => {
+      return {
+        id: d.id,
+        title: d.title,
+        type: 'file'
+      }
+    });
+    const taskLinks = (await taskLinkEntity.list(client, { taskId: task.id })).map(d => {
+      return {
+        id: d.id,
+        title: d.title,
+        type: 'link'
+      }
+    });
+    document.file = await fileEntity.get(client, { id: fileId });
+    task.document = document;
+    task.taskAnswers = taskDocuments.concat(taskLinks);
+    return { task };
+  } catch (err) {
+    throw err;
+  }
+}
+
 const getTasksByBlockId = async (client, blockId) => {
   try {
     const data = { blockId };
     const tasksList = await taskEntity.list(client, data);
     const tasks = [];
-    for (const { documentId, ...task } of tasksList) {
-      const { fileId, ...document } = await documentEntity.get(client, { id: documentId });
-      const taskDocuments = (await taskDocumentEntity.list(client, { taskId: task.id })).map(d => {
-        return {
-          id: d.id,
-          title: d.title,
-          type: 'file'
-        }
-      });
-      const taskLinks = (await taskLinkEntity.list(client, { taskId: task.id })).map(d => {
-        return {
-          id: d.id,
-          title: d.title,
-          type: 'link'
-        }
-      });
-      document.file = await fileEntity.get(client, { id: fileId });
-      task.document = document;
-      task.taskAnswers = taskDocuments.concat(taskLinks);
+    for (const taskData of tasksList) {
+      const { task } = await getTaskInfo(client, taskData);
       tasks.push(task);
     }
     return { tasks };
@@ -39,25 +49,8 @@ const getTasksByBlockId = async (client, blockId) => {
 const getTask = async (client, id) => {
   try {
     const data = { id };
-    const { documentId, ...task } = await taskEntity.get(client, data);
-    const { fileId, ...document } = await documentEntity.get(client, { id: documentId });
-    const taskDocuments = (await taskDocumentEntity.list(client, { taskId: data.id })).map(d => {
-      return {
-        id: d.id,
-        title: d.title,
-        type: 'file'
-      }
-    });
-    const taskLinks = (await taskLinkEntity.list(client, { taskId: data.id })).map(d => {
-      return {
-        id: d.id,
-        title: d.title,
-        type: 'link'
-      }
-    });
-    document.file = await fileEntity.get(client, { id: fileId });
-    task.document = document;
-    task.taskAnswers = taskDocuments.concat(taskLinks);
+    const taskData = await taskEntity.get(client, data);
+    const { task } = await getTaskInfo(client, taskData);
     return { task };
   } catch (err) {
     throw err;
@@ -174,41 +167,23 @@ const deleteTasks = async (client, ids) => {
 const getTasksUserByBlockId = async (client, userId, blockId) => {
   try {
     const data = { userId, blockId };
-    const tasksList = await taskEntity.list(client, data);
+    const tasksList = await taskEntity.listUser(client, data);
     const tasks = [];
-    for (const { documentId, ...task } of tasksList) {
-      const { fileId, ...document } = await documentEntity.get(client, { id: documentId });
-      const taskDocuments = (await taskDocumentEntity.list(client, { taskId: task.id })).map(d => {
-        return {
-          id: d.id,
-          title: d.title,
-          type: 'file'
-        }
-      });
-      const taskLinks = (await taskLinkEntity.list(client, { taskId: task.id })).map(d => {
-        return {
-          id: d.id,
-          title: d.title,
-          type: 'link'
-        }
-      });
-      document.file = await fileEntity.get(client, { id: fileId });
-      task.document = document;
-      task.taskAnswers = taskDocuments.concat(taskLinks);
-
-      const min = 1;
-      const max = 4;
-      const status = Math.floor(Math.random() * (max - min + 1) + min);
-      switch (status) {
-        case 1: task.status = undefined; break;
-        case 2: task.status = 'done'; break;
-        case 3: task.status = 'sent'; break;
-        case 4: task.status = 'inbox'; break;
-      }
-
+    for (const taskData of tasksList) {
+      const { task } = await getTaskInfo(client, taskData);
       tasks.push(task);
     }
     return { tasks };
+  } catch (err) {
+    throw err;
+  }
+}
+const getTaskUser = async (client, id, userId) => {
+  try {
+    const data = { id, userId };
+    const taskData = await taskEntity.getUser(client, data);
+    const { task } = await getTaskInfo(client, taskData);
+    return { task };
   } catch (err) {
     throw err;
   }
@@ -222,5 +197,6 @@ module.exports = {
   deleteTask,
   deleteTasks,
 
-  getTasksUserByBlockId
+  getTasksUserByBlockId,
+  getTaskUser
 }

@@ -147,6 +147,26 @@ const getTasksUser = async (req, res) => {
     handlers.finallyHandler(client);
   }
 }
+const getTaskUser = async (req, res) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN')
+
+    const id = req.params.id;
+    const userId = req.user.id;
+    const { task } = await taskService.getTaskUser(client, id, userId);
+
+    await client.query('COMMIT')
+    res.status(200).send({
+      success: true,
+      data: task
+    });
+  } catch (err) {
+    await handlers.errorHandler(client, res, err);
+  } finally {
+    handlers.finallyHandler(client);
+  }
+}
 
 module.exports = {
   getTasks,
@@ -155,5 +175,6 @@ module.exports = {
   updateTask,
   deleteTasks,
 
-  getTasksUser
+  getTasksUser,
+  getTaskUser
 }

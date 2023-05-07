@@ -11,5 +11,6 @@ router.patch("/update/:id", verifyAdmin, route.updateTask);
 router.delete("/delete", verifyAdmin, route.deleteTasks);
 
 router.post("/user/list", verifyStudent, route.getTasksUser);
+router.get("/user/get/:id", verifyStudent, route.getTaskUser);
 
 module.exports = router
