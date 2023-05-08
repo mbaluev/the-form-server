@@ -13,7 +13,7 @@ const mapRowUser = (row) => {
     case 1: status = undefined; break;
     case 2: status = 'done'; break;
     case 3: status = 'sent'; break;
-    case 4: status = 'inbox'; break;
+    case 4: status = 'income'; break;
   }
   return {
     id: row.id,
