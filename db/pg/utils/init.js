@@ -183,9 +183,54 @@ const init = async () => {
     await client.query(query);
 
     // userTasks
+    query = `CREATE TABLE IF NOT EXISTS userTasks (
+      id TEXT PRIMARY KEY,
+      taskId TEXT NOT NULL,
+      userId TEXT NOT NULL,
+      status TEXT,
+      FOREIGN KEY(taskId) REFERENCES tasks(id),
+      FOREIGN KEY(userId) REFERENCES users(id)
+    )`;
+    await client.query(query);
+
     // userTaskLinks
+    query = `CREATE TABLE IF NOT EXISTS userTaskLinks (
+      id TEXT PRIMARY KEY,
+      taskLinkId TEXT NOT NULL,
+      userId TEXT NOT NULL,
+      url TEXT NOT NULL,
+      FOREIGN KEY(taskLinkId) REFERENCES taskLinks(id),
+      FOREIGN KEY(userId) REFERENCES users(id)
+    )`;
+    await client.query(query);
+
     // userTaskDocuments
+    query = `CREATE TABLE IF NOT EXISTS userTaskDocuments (
+      id TEXT PRIMARY KEY,
+      taskDocumentId TEXT NOT NULL,
+      documentId TEXT NOT NULL,
+      userId TEXT NOT NULL,
+      url TEXT NOT NULL,
+      FOREIGN KEY(taskDocumentId) REFERENCES taskDocuments(id),
+      FOREIGN KEY(documentId) REFERENCES documents(id),
+      FOREIGN KEY(userId) REFERENCES users(id)
+    )`;
+    await client.query(query);
+
     // userTaskHistory
+    query = `CREATE TABLE IF NOT EXISTS userTaskHistory (
+      id TEXT PRIMARY KEY,
+      userTaskId TEXT NOT NULL,
+      userTaskDocumentId TEXT NOT NULL,
+      userTaskLinkId TEXT NOT NULL,
+      userId TEXT NOT NULL,
+      date TIMESTAMP NOT NULL,
+      FOREIGN KEY(userTaskId) REFERENCES userTasks(id),
+      FOREIGN KEY(userTaskDocumentId) REFERENCES userTaskDocuments(id),
+      FOREIGN KEY(userTaskLinkId) REFERENCES userTaskLinks(id),
+      FOREIGN KEY(userId) REFERENCES users(id)
+    )`;
+    await client.query(query);
 
     // create an initial user (username: qwe, password: qwe)
     // const { v4: guid } = require("uuid");
