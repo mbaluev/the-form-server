@@ -109,6 +109,30 @@ const getBlockUser = async (client, id, userId) => {
   }
 }
 
+const initBlocksUser = async (client, userId) => {
+  try {
+    const blocks = await blockEntity.list(client, {});
+    const blocksUser = await blockEntity.listUser(client, { userId });
+    for (const block of blocks) {
+      const blockUser = blocksUser.find(d => d.id === block.id);
+      if (!blockUser) {
+        const dataBlockUser = {
+          id: uuid.v4(),
+          blockId: block.id,
+          userId,
+          enable: false,
+          complete: false,
+          completeMaterials: false,
+          completeQuestions: false,
+          completeTasks: false
+        };
+        await userBlockEntity.create(client, dataBlockUser);
+      }
+    }
+  } catch (err) {
+    throw err;
+  }
+}
 const checkFirstBlockEnabled = async (client, userId) => {
   try {
     const data = { userId, enable: true };
@@ -146,5 +170,6 @@ module.exports = {
   getBlocksUserByModuleId,
   getBlockUser,
 
+  initBlocksUser,
   checkFirstBlockEnabled,
 }

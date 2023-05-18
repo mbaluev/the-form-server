@@ -107,6 +107,27 @@ const getModuleUserByBlockId = async (client, blockId, userId) => {
   }
 }
 
+const initModulesUser = async (client, userId) => {
+  try {
+    const modules = await moduleEntity.list(client, {});
+    const modulesUser = await moduleEntity.listUser(client, { userId });
+    for (const module of modules) {
+      const moduleUser = modulesUser.find(d => d.id === module.id);
+      if (!moduleUser) {
+        const dataModuleUser = {
+          id: uuid.v4(),
+          moduleId: module.id,
+          userId,
+          enable: false,
+          complete: false
+        };
+        await userModuleEntity.create(client, dataModuleUser);
+      }
+    }
+  } catch (err) {
+    throw err;
+  }
+}
 const checkFirstModuleEnabled = async (client, userId) => {
   try {
     const data = { userId, enable: true };
@@ -141,5 +162,6 @@ module.exports = {
   getModuleUser,
   getModuleUserByBlockId,
 
+  initModulesUser,
   checkFirstModuleEnabled,
 }

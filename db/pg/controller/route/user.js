@@ -4,6 +4,8 @@ const handlers = require("../../utils/handlers");
 const userService = require("../../controller/service/user");
 const crypto = require("crypto");
 const cryptoPass = require("../../../../utils/cryptoPass");
+const moduleService = require("../service/module");
+const blockService = require("../service/block");
 
 const getUsers = async (req, res) => {
   const client = await pool.connect();
@@ -125,9 +127,28 @@ const deleteUsers = async (req, res) => {
     handlers.finallyHandler(client);
   }
 }
+
 const getMe = async (req, res) => {
   res.send(req.user);
 }
+const initUser = async (req, res, next) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN')
+
+    const userId = req.user.id;
+    await moduleService.initModulesUser(client, userId);
+    await blockService.initBlocksUser(client, userId);
+
+    await client.query('COMMIT')
+    next()
+  } catch (err) {
+    await handlers.errorHandler(client, res, err);
+  } finally {
+    handlers.finallyHandler(client);
+  }
+}
+
 
 module.exports = {
   getUsers,
@@ -135,5 +156,7 @@ module.exports = {
   createUser,
   updateUser,
   deleteUsers,
-  getMe
+
+  getMe,
+  initUser
 }

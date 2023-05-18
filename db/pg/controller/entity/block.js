@@ -111,7 +111,7 @@ const listUser = async (client, data) => {
     let query1 = `SELECT b.id, b.moduleId, b.title, b.name, b.position, ub.enable, ub.complete, ub.completeMaterials, ub.completeQuestions, ub.completeTasks
       FROM blocks b
       INNER JOIN modules m ON m.id = b.moduleId 
-      LEFT JOIN userBlocks ub ON ub.blockId = b.id AND ub.userId = $1
+      INNER JOIN userBlocks ub ON ub.blockId = b.id AND ub.userId = $1
       WHERE (LOWER(b.title) LIKE $2 OR LOWER(b.name) LIKE $3)`
     const params1 = [userId, '%' + search.toLowerCase() + '%', '%' + search.toLowerCase() + '%'];
     let index = 4;
@@ -138,7 +138,7 @@ const getUser = async (client, data) => {
     const query1 = `SELECT b.id, b.moduleId, b.title, b.name, b.position, ub.enable, ub.complete, ub.completeMaterials, ub.completeQuestions, ub.completeTasks
       FROM blocks b
       INNER JOIN modules m ON m.id = b.moduleId 
-      LEFT JOIN userBlocks ub ON ub.blockId = b.id AND ub.userId = $1
+      INNER JOIN userBlocks ub ON ub.blockId = b.id AND ub.userId = $1
       WHERE b.id = $2`
     const params1 = [userId, id];
     const res1 = await client.query(query1, params1);

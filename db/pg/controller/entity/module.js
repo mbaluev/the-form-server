@@ -78,7 +78,7 @@ const listUser = async (client, data) => {
     const enable = data.enable;
     let query1 = `SELECT m.id, m.title, m.name, m.position, um.enable, um.complete 
       FROM modules m
-      LEFT JOIN userModules um ON um.moduleId = m.id AND um.userId = $1
+      INNER JOIN userModules um ON um.moduleId = m.id AND um.userId = $1
       WHERE (LOWER(title) LIKE $2 OR LOWER(name) LIKE $3)`
     const params1 = [userId, '%' + search.toLowerCase() + '%', '%' + search.toLowerCase() + '%'];
     if (enable !== undefined) {
@@ -100,7 +100,7 @@ const getUser = async (client, data) => {
     if (id) {
       const query1 = `SELECT m.id, m.title, m.name, m.position, um.enable, um.complete 
         FROM modules m
-        LEFT JOIN userModules um ON um.moduleId = m.id AND um.userId = $1
+        INNER JOIN userModules um ON um.moduleId = m.id AND um.userId = $1
         WHERE m.id = $2`
       const params1 = [userId, id];
       const res1 = await client.query(query1, params1);

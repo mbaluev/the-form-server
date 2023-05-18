@@ -141,11 +141,21 @@ const checkQuestionsUser = async (req, res) => {
   try {
     handlers.validateRequest(req, 'blockId');
     handlers.validateRequest(req, 'questions');
+    await client.query('BEGIN');
+
     const blockId = req.body.blockId;
     const questions = req.body.questions;
     const userId = req.user.id;
     await questionService.checkAnswersByBlockIdUser(client, blockId, questions, userId);
-    await getQuestionsUser(req, res);
+    const { questions: questionsUpdated } = await questionService.getQuestionsByBlockIdUser(client, blockId, userId);
+    // await blockService.updateBlockUser(client, id, userId);
+    // await moduleService.updateModuleUser(client, id, userId);
+
+    await client.query('COMMIT');
+    res.status(200).send({
+      success: true,
+      data: questionsUpdated
+    });
   } catch (err) {
     await handlers.errorHandler(client, res, err);
   } finally {

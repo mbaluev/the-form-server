@@ -3,12 +3,15 @@ const documentEntity = require("../entity/document");
 const fileEntity = require("../entity/file");
 const taskDocumentEntity = require("../entity/taskDocument");
 const taskLinkEntity = require("../entity/taskLink");
+const userTaskHistoryEntity = require("../entity/userTaskHistory");
+const userEntity = require("../entity/user");
 const fs = require("fs");
 
 const getTaskInfo = async (client, taskData) => {
   try {
-    const { documentId, ...task } = taskData
+    const { documentId, userTaskId, ...task } = taskData
     const { fileId, ...document } = await documentEntity.get(client, { id: documentId });
+    document.file = await fileEntity.get(client, { id: fileId });
     const taskDocuments = (await taskDocumentEntity.list(client, { taskId: task.id })).map(d => {
       return {
         id: d.id,
@@ -23,9 +26,23 @@ const getTaskInfo = async (client, taskData) => {
         type: 'link'
       }
     });
-    document.file = await fileEntity.get(client, { id: fileId });
+    const taskHistoryRaw = await userTaskHistoryEntity.list(client, { userTaskId });
+    const taskHistory = [];
+    for (const taskHistoryRawItem of taskHistoryRaw) {
+      const { id, userTaskDocumentId, userId, date} = taskHistoryRawItem;
+      const taskHistoryItem = { id, date };
+      const { fileId, ...document } = await documentEntity.get(client, { id: userTaskDocumentId });
+      document.file = await fileEntity.get(client, { id: fileId });
+      const { firstname, lastname, username } = await userEntity.get(client, { id: userId });
+      taskHistoryItem.document = document;
+      taskHistoryItem.user = { id: userId, firstname, lastname, username };
+    }
     task.document = document;
     task.taskAnswers = taskDocuments.concat(taskLinks);
+    task.documentHistory = taskHistory
+    task.documentLatest = {
+      document
+    }
     return { task };
   } catch (err) {
     throw err;

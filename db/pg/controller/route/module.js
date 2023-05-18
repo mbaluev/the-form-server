@@ -2,7 +2,6 @@ const uuid = require("uuid");
 const pool = require("../../utils/pool");
 const handlers = require("../../utils/handlers");
 const moduleService = require("../service/module");
-const blockService = require("../service/block");
 
 const getModules = async (req, res) => {
   const client = await pool.connect();
@@ -159,24 +158,6 @@ const getModuleUser = async (req, res) => {
   }
 }
 
-const userMiddleware = async (req, res, next) => {
-  const client = await pool.connect();
-  try {
-    await client.query('BEGIN')
-
-    const userId = req.user.id;
-    await moduleService.checkFirstModuleEnabled(client, userId);
-    await blockService.checkFirstBlockEnabled(client, userId);
-
-    await client.query('COMMIT')
-    next()
-  } catch (err) {
-    await handlers.errorHandler(client, res, err);
-  } finally {
-    handlers.finallyHandler(client);
-  }
-}
-
 module.exports = {
   getModules,
   getModule,
@@ -186,6 +167,4 @@ module.exports = {
 
   getModulesUser,
   getModuleUser,
-
-  userMiddleware,
 }

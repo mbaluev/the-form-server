@@ -187,7 +187,8 @@ const init = async () => {
       id TEXT PRIMARY KEY,
       taskId TEXT NOT NULL,
       userId TEXT NOT NULL,
-      status TEXT,
+      complete BOOL NOT NULL,
+      status TEXT NOT NULL,
       FOREIGN KEY(taskId) REFERENCES tasks(id),
       FOREIGN KEY(userId) REFERENCES users(id)
     )`;

@@ -173,6 +173,8 @@ const updateMaterialUser = async (req, res) => {
     const id = req.params.id;
     const userId = req.user.id;
     await materialService.updateMaterialUser(client, id, userId);
+    // await blockService.updateBlockUser(client, id, userId);
+    // await moduleService.updateModuleUser(client, id, userId);
 
     await client.query('COMMIT')
     res.status(200).send({

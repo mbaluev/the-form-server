@@ -118,6 +118,7 @@ const getQuestionsByBlockIdUser = async (client, blockId, userId) => {
 }
 const checkAnswersByBlockIdUser = async (client, blockId, questions, userId) => {
   try {
+    // check answers
     const { questions: questionsList } = await getQuestionsByBlockId(client, blockId);
     const completes = [];
     for (const questionUser of questions) {
@@ -143,7 +144,7 @@ const checkAnswersByBlockIdUser = async (client, blockId, questions, userId) => 
         await userQuestionEntity.create(client, dataUserQuestion);
       }
 
-      // save answers
+      // save userQuestionAnswers
       await userQuestionAnswerEntity.delByQuestionIdUserId(client, questionId, userId);
       for (const answer of answers) {
         const dataUserQuestionAnswer = {
@@ -155,7 +156,8 @@ const checkAnswersByBlockIdUser = async (client, blockId, questions, userId) => 
         await userQuestionAnswerEntity.create(client, dataUserQuestionAnswer);
       }
     }
-    // update block
+
+    // update userBlocks.completeQuestions
     if (completes.filter(complete => !complete).length === 0) {
       const userBlock = await userBlockEntity.get(client, { blockId });
       const dataUserBlock = { ...userBlock, completeQuestions: true }

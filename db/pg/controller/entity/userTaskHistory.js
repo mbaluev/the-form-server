@@ -9,8 +9,17 @@ const mapRow = (row) => {
   }
 }
 
-const list = async (client) => {
+const list = async (client, data) => {
   try {
+    const userTaskId = data.userTaskId;
+    if (userTaskId) {
+      const query1 = `SELECT id, usertaskid, usertaskdocumentid, usertasklinkid, userid, date
+        FROM userTaskHistory
+        WHERE usertaskid = $1`
+      const params1 = [userTaskId];
+      const res1 = await client.query(query1, params1);
+      return res1.rows.map(mapRow);
+    }
     const query1 = `SELECT id, usertaskid, usertaskdocumentid, usertasklinkid, userid, date
       FROM userTaskHistory`
     const res1 = await client.query(query1);
