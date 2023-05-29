@@ -1,0 +1,256 @@
+datasource db {
+  provider = "postgresql"
+  url = env("PRISMA_DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Session {
+  id String @id
+  sid String @unique
+  data String
+  expiresAt DateTime
+}
+
+model Document {
+  id String @id @default(uuid())
+  name String
+  description String?
+  url String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  documentType DocumentType @relation(fields: [documentTypeId], references: [id])
+  documentTypeId String
+
+  file File? @relation(fields: [fileId], references: [id])
+  fileId String? @unique
+
+  user User @relation(fields: [userId], references: [id])
+  userId String
+
+  material Material?
+  task Task?
+  userTaskDocument UserTaskDocument?
+}
+model DocumentType {
+  id String @id @default(uuid())
+  name String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  documents Document[]
+}
+model File {
+  id String @id @default(uuid())
+  name String
+  size Int
+  mimeType String
+  path String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  document Document?
+}
+
+model Module {
+  id String @id @default(uuid())
+  title String
+  name String
+  position Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  blocks Block[]
+  userModules UserModule[]
+}
+model Block {
+  id String @id @default(uuid())
+  title String
+  name String
+  position Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  module Module @relation(fields: [moduleId], references: [id])
+  moduleId String
+
+  materials Material[]
+  tasks Task[]
+  questions Question[]
+  userBlocks UserBlock[]
+}
+model Material {
+  id String @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  block Block @relation(fields: [blockId], references: [id])
+  blockId String
+
+  document Document @relation(fields: [documentId], references: [id])
+  documentId String @unique
+
+  userMaterials UserMaterial[]
+}
+model Task {
+  id String @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  block Block @relation(fields: [blockId], references: [id])
+  blockId String
+
+  document Document @relation(fields: [documentId], references: [id])
+  documentId String @unique
+
+  userTasks UserTask[]
+  userTaskDocuments UserTaskDocument[]
+}
+model Question {
+  id String @id @default(uuid())
+  title String
+  position Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  block Block @relation(fields: [blockId], references: [id])
+  blockId String
+
+  questionOptions QuestionOption[]
+  userQuestions UserQuestion[]
+  userQuestionAnswers UserQuestionAnswer[]
+}
+model QuestionOption {
+  id String @id @default(uuid())
+  title String
+  correct Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  question Question @relation(fields: [questionId], references: [id])
+  questionId String
+
+  userQuestionAnswers UserQuestionAnswer[]
+}
+
+model User {
+  id String @id @default(uuid())
+  firstname String
+  lastname String
+  username String @unique
+  password String
+  salt String
+  active Boolean @default(false)
+  paid Boolean @default(false)
+  admin Boolean @default(false)
+  refreshToken String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userDocuments Document[]
+  userModules UserModule[]
+  userBlocks UserBlock[]
+  userMaterials UserMaterial[]
+  userTasks UserTask[]
+  userTaskDocuments UserTaskDocument[]
+  userQuestions UserQuestion[]
+  userQuestionAnswers UserQuestionAnswer[]
+}
+model UserModule {
+  id String @id @default(uuid())
+  enable Boolean
+  complete Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  module Module @relation(fields: [moduleId], references: [id])
+  moduleId String
+
+  user User @relation(fields: [userId], references: [id])
+  userId String
+}
+model UserBlock {
+  id String @id @default(uuid())
+  enable Boolean
+  complete Boolean
+  completeMaterials Boolean
+  completeQuestions Boolean
+  completeTasks Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  block Block @relation(fields: [blockId], references: [id])
+  blockId String
+
+  user User @relation(fields: [userId], references: [id])
+  userId String
+}
+model UserMaterial {
+  id String @id @default(uuid())
+  complete Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  material Material @relation(fields: [materialId], references: [id])
+  materialId String
+
+  user User @relation(fields: [userId], references: [id])
+  userId String
+}
+model UserTask {
+  id String @id @default(uuid())
+  complete Boolean
+  sent Boolean?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  task Task @relation(fields: [taskId], references: [id])
+  taskId String
+
+  user User @relation(fields: [userId], references: [id])
+  userId String
+}
+model UserTaskDocument {
+  id String @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  task Task @relation(fields: [taskId], references: [id])
+  taskId String
+
+  user User @relation(fields: [userId], references: [id])
+  userId String
+
+  document Document @relation(fields: [documentId], references: [id])
+  documentId String @unique
+}
+model UserQuestion {
+  id String @id @default(uuid())
+  complete Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  question Question @relation(fields: [questionId], references: [id])
+  questionId String
+
+  user User @relation(fields: [userId], references: [id])
+  userId String
+}
+model UserQuestionAnswer {
+  id String @id @default(uuid())
+  complete Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  question Question @relation(fields: [questionId], references: [id])
+  questionId String
+
+  option QuestionOption @relation(fields: [optionId], references: [id])
+  optionId String
+
+  user User @relation(fields: [userId], references: [id])
+  userId String
+}

@@ -1,7 +1,5 @@
-const uuid = require("uuid");
-const userEntity = require("../entity/user");
-const moduleEntity = require("../entity/module");
-const userModuleEntity = require("../entity/userModule");
+const userEntity = require("../table/user");
+const userModuleEntity = require("../table/userModule");
 
 const getUsers = async (client, search) => {
   try {

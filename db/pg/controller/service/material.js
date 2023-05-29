@@ -1,8 +1,8 @@
-const materialEntity = require("../entity/material");
-const userMaterialEntity = require("../entity/userMaterial");
-const documentEntity = require("../entity/document");
-const fileEntity = require("../entity/file");
-const userBlockEntity = require("../entity/userBlock");
+const materialEntity = require("../table/material");
+const userMaterialEntity = require("../table/userMaterial");
+const documentEntity = require("../table/document");
+const fileEntity = require("../table/file");
+const userBlockEntity = require("../table/userBlock");
 const fs = require("fs");
 const uuid = require("uuid");
 

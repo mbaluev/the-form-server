@@ -1,6 +1,6 @@
-const moduleEntity = require("../entity/module");
-const userModuleEntity = require("../entity/userModule");
-const blockService = require("../service/block");
+const moduleEntity = require("../table/module");
+const userModuleEntity = require("../table/userModule");
+const blockService = require(".//block");
 const uuid = require("uuid");
 
 const getModules = async (client, search) => {

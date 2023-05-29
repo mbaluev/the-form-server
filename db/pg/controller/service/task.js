@@ -1,10 +1,10 @@
-const taskEntity = require("../entity/task");
-const documentEntity = require("../entity/document");
-const fileEntity = require("../entity/file");
-const taskDocumentEntity = require("../entity/taskDocument");
-const taskLinkEntity = require("../entity/taskLink");
-const userTaskHistoryEntity = require("../entity/userTaskHistory");
-const userEntity = require("../entity/user");
+const taskEntity = require("../table/task");
+const documentEntity = require("../table/document");
+const fileEntity = require("../table/file");
+const taskDocumentEntity = require("../table/taskDocument");
+const taskLinkEntity = require("../table/taskLink");
+const userTaskHistoryEntity = require("../table/userTaskHistory");
+const userEntity = require("../table/user");
 const fs = require("fs");
 
 const getTaskInfo = async (client, taskData) => {
@@ -39,10 +39,9 @@ const getTaskInfo = async (client, taskData) => {
     }
     task.document = document;
     task.taskAnswers = taskDocuments.concat(taskLinks);
-    task.documentHistory = taskHistory
-    task.documentLatest = {
-      document
-    }
+    if (taskHistory.length === 0) task.taskLatest = { document }
+    else task.taskLatest = taskHistory.shift()
+    task.taskHistory = taskHistory
     return { task };
   } catch (err) {
     throw err;

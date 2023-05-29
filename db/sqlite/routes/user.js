@@ -4,7 +4,7 @@ const crypto = require("crypto");
 
 const router = express.Router()
 const db = require("../utils/init")
-const cryptoPass = require("../../../utils/cryptoPass");
+const cryptoPass = require("../../../prisma/utils/cryptoPass");
 const { verifyUser, verifyAdmin } = require("../passport/auth")
 
 router.post("/list", verifyAdmin, (req, res, next) => {

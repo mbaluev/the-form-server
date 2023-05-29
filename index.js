@@ -29,11 +29,15 @@ const corsOptions = {
 }
 app.use(cors(corsOptions))
 
+// prisma
+const store = require('./prisma/utils/session');
+const passport = require("./prisma/passport");
+
 // postgres
-const init = require('./db/pg/utils/init');
-init().then(() => console.log('Connected to the pg database'));
-const store = require('./db/pg/utils/session');
-const passport = require("./db/pg/passport");
+// const init = require('./db/pg/utils/init');
+// init().then(() => console.log('Connected to the pg database'));
+// const store = require('./db/pg/utils/session');
+// const passport = require("./db/pg/passport");
 
 // sqlite
 // const store = require('./db/sqlite/utils/session');
@@ -58,23 +62,25 @@ app.get("/", (req, res) => {
   res.json({ success: true })
 })
 
-// routes
-const routerAuth = require("./db/pg/route/auth");
-const routerUser = require("./db/pg/route/user");
-const routerFile = require("./db/pg/route/file");
-const routerModule = require("./db/pg/route/module");
-const routerBlock = require("./db/pg/route/block");
-const routerMaterial = require("./db/pg/route/material");
-const routerTask = require("./db/pg/route/task");
-const routerQuestion = require("./db/pg/route/question");
+// old routes
+const routerAuth = require("./prisma/router/auth");
+const routerUser = require("./prisma/router/user");
+const routerDocumentType = require("./prisma/router/documentType");
+const routerFile = require("./prisma/router/file");
+const routerModule = require("./prisma/router/module");
+const routerBlock = require("./prisma/router/block");
+const routerMaterial = require("./prisma/router/material");
+const routerTask = require("./prisma/router/task");
+// const routerQuestion = require("./prisma/router/question");
 app.use('/api/auth', routerAuth);
 app.use('/api/user', routerUser);
+app.use('/api/documentType', routerDocumentType);
 app.use('/api/file', routerFile);
 app.use('/api/module', routerModule);
 app.use('/api/block', routerBlock);
 app.use('/api/material', routerMaterial);
 app.use('/api/task', routerTask);
-app.use('/api/question', routerQuestion);
+// app.use('/api/question', routerQuestion);
 
 // files
 const fs = require('fs');

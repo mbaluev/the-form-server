@@ -1,7 +1,7 @@
 const uuid = require("uuid");
-const userEntity = require("../entity/user");
-const moduleEntity = require("../entity/module");
-const userModuleEntity = require("../entity/userModule");
+const userEntity = require("../table/user");
+const moduleEntity = require("../table/module");
+const userModuleEntity = require("../table/userModule");
 const { getToken, getRefreshToken } = require("../../passport/auth")
 const handlers = require("../../utils/handlers");
 const jwt = require("jsonwebtoken");

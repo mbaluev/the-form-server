@@ -1,9 +1,9 @@
 const uuid = require("uuid");
-const questionEntity = require("../entity/question");
-const questionOptionEntity = require("../entity/questionOption");
-const userBlockEntity = require("../entity/userBlock");
-const userQuestionEntity = require("../entity/userQuestion");
-const userQuestionAnswerEntity = require("../entity/userQuestionAnswer");
+const questionEntity = require("../table/question");
+const questionOptionEntity = require("../table/questionOption");
+const userBlockEntity = require("../table/userBlock");
+const userQuestionEntity = require("../table/userQuestion");
+const userQuestionAnswerEntity = require("../table/userQuestionAnswer");
 
 const getQuestionsByBlockId = async (client, blockId) => {
   try {

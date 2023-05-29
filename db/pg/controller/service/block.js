@@ -1,8 +1,8 @@
-const blockEntity = require("../entity/block");
-const userBlockEntity = require("../entity/userBlock");
-const materialService = require("../service/material");
-const questionService = require("../service/question");
-const taskService = require("../service/task");
+const blockEntity = require("../table/block");
+const userBlockEntity = require("../table/userBlock");
+const materialService = require(".//material");
+const questionService = require(".//question");
+const taskService = require(".//task");
 const uuid = require("uuid");
 
 const getBlocks = async (client, search) => {

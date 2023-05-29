@@ -7,7 +7,7 @@ const router = express.Router()
 const db = require("../utils/init")
 const passport = require("../passport");
 const { getToken, COOKIE_OPTIONS, getRefreshToken, verifyUser } = require("../passport/auth")
-const cryptoPass = require("../../../utils/cryptoPass");
+const cryptoPass = require("../../../prisma/utils/cryptoPass");
 
 router.post('/signin',
   passport.authenticate('local'), (req, res, next) => {

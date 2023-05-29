@@ -1,5 +1,5 @@
 const LocalStrategy = require('passport-local');
-const cryptoPass = require("../../../../utils/cryptoPass");
+const cryptoPass = require("../../../../prisma/utils/cryptoPass");
 const pool = require("../../utils/pool");
 
 module.exports = new LocalStrategy({

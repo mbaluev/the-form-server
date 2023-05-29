@@ -1,4 +1,4 @@
-const fileEntity = require("../entity/file");
+const fileEntity = require("../table/file");
 
 const uploadFile = async (client, data) => {
   try {
