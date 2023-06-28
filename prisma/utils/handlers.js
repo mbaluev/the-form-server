@@ -14,7 +14,8 @@ const throwError = (code, message) => {
 const validateRequest = (req, ...arr) => {
   const errors = []
   arr.forEach((field) => {
-    if (!objectPath.get(req.body, field)) {
+    if (objectPath.get(req.body, field) === undefined ||
+        objectPath.get(req.body, field) === null) {
       errors.push(`No ${field} specified`);
     }
   })

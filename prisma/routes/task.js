@@ -212,6 +212,13 @@ const userItem = async (req, res) => {
                 documentType: true,
                 file: true
               }
+            },
+            user: {
+              select: {
+                username: true,
+                firstname: true,
+                lastname: true
+              }
             }
           },
           orderBy: {
@@ -269,7 +276,7 @@ const userSent = async (req, res) => {
           taskId: req.body.taskId,
           userId
         },
-        data: { sent: true }
+        data: { sent: req.body.sent }
       })
 
       const task = await tx.task.findUnique({
@@ -305,6 +312,141 @@ const userSent = async (req, res) => {
   }
 }
 
+const adminList = async (req, res) => {
+  try {
+    const tasks = await prisma.$transaction(async (tx) => {
+      const userTasks = await tx.userTask.findMany({
+        include: {
+          user: {
+            select: {
+              username: true,
+              firstname: true,
+              lastname: true
+            }
+          },
+          task: {
+            include: {
+              block: true,
+              document: {
+                include: {
+                  documentType: true,
+                  file: true
+                }
+              },
+            }
+          },
+        },
+        orderBy: {
+          updatedAt: 'desc'
+        }
+      });
+      for (const userTask of userTasks) {
+        userTask.userTaskDocuments = await tx.userTaskDocument.findMany({
+          where: {
+            taskId: userTask.taskId
+          },
+          include: {
+            document: {
+              include: {
+                documentType: true,
+                file: true
+              }
+            }
+          },
+          orderBy: {
+            createdAt: 'desc'
+          }
+        });
+      }
+      return userTasks;
+    })
+    res.status(200).send({
+      success: true,
+      data: tasks
+    });
+  } catch (err) {
+    await handlers.errorHandler(res, err);
+  } finally {
+    await prisma.$disconnect()
+  }
+}
+const adminItem = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const task = await prisma.$transaction(async (tx) => {
+      const userTask = await tx.userTask.findUnique({
+        where: { id },
+        include: {
+          user: {
+            select: {
+              username: true,
+              firstname: true,
+              lastname: true
+            }
+          },
+          task: {
+            include: {
+              block: true,
+              document: {
+                include: {
+                  documentType: true,
+                  file: true
+                }
+              },
+            }
+          },
+        }
+      });
+      userTask.userTaskDocuments = await tx.userTaskDocument.findMany({
+        where: {
+          taskId: userTask.taskId
+        },
+        include: {
+          user: {
+            select: {
+              username: true,
+              firstname: true,
+              lastname: true
+            }
+          },
+          document: {
+            include: {
+              documentType: true,
+              file: true
+            }
+          }
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      });
+      return userTask;
+    })
+    res.status(200).send({
+      success: true,
+      data: task
+    });
+  } catch (err) {
+    await handlers.errorHandler(res, err);
+  } finally {
+    await prisma.$disconnect()
+  }
+}
+const adminComplete = async (req, res) => {
+  try {
+    const id = req.params.id;
+    await prisma.userTask.update({
+      where: { id },
+      data: { complete: true }
+    })
+    await adminItem(req, res);
+  } catch (err) {
+    await handlers.errorHandler(res, err);
+  } finally {
+    await prisma.$disconnect()
+  }
+}
+
 module.exports = {
   list,
   item,
@@ -314,5 +456,9 @@ module.exports = {
 
   userList,
   userItem,
-  userSent
+  userSent,
+
+  adminList,
+  adminItem,
+  adminComplete
 }

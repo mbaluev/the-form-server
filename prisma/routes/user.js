@@ -176,7 +176,7 @@ const checkTables = async (req, res, next) => {
           data: {
             materialId: material.id,
             userId,
-            complete: false,
+            complete: null,
           }
         })
       }
@@ -194,7 +194,7 @@ const checkTables = async (req, res, next) => {
           data: {
             taskId: task.id,
             userId,
-            complete: false,
+            complete: null,
           }
         })
       }
@@ -212,7 +212,7 @@ const checkTables = async (req, res, next) => {
           data: {
             questionId: question.id,
             userId,
-            complete: false,
+            complete: null,
           }
         })
       }
@@ -276,16 +276,18 @@ const checkBlocks = async (req, res, next) => {
       const hasQuestions = userQuestions.length > 0
 
       const completeMaterials = !hasMaterials ? false : userMaterials.reduce((prev, curr) => {
-        return prev && curr.complete
+        return prev && Boolean(curr.complete)
       }, true);
       const completeTasks = !hasTasks ? false : userTasks.reduce((prev, curr) => {
-        return prev && curr.complete
+        return prev && Boolean(curr.complete)
       }, true);
-      const completeQuestions = !hasQuestions ? false : userQuestions.reduce((prev, curr) => {
-        return prev && curr.complete
+      const completeQuestions = !hasQuestions ? null : userQuestions.reduce((prev, curr) => {
+        if (prev === false || curr.complete === false) return false;
+        if (prev && Boolean(curr.complete)) return true;
+        return null;
       }, true);
 
-      const complete = completeMaterials && completeTasks && completeQuestions;
+      const complete = Boolean(completeMaterials && completeTasks && completeQuestions);
       const enable = hasMaterials && hasTasks && hasQuestions
       await prisma.userBlock.update({
         where: { id: userBlock.id },
@@ -370,10 +372,8 @@ const checkModules = async (req, res, next) => {
       })
       const hasBlocks = userBlocks.length > 0
 
-      const complete = !hasBlocks ? false : userBlocks.reduce((prev, curr) => {
-        return prev && curr.complete
-      }, true);
-      const enable = userBlocks.reduce((prev, curr) => (prev || curr.enable), false);
+      const complete = !hasBlocks ? false : userBlocks.reduce((prev, curr) => (prev && curr.complete), true);
+      const enable = userBlocks.reduce((prev, curr) => (prev && curr.enable), false);
       await prisma.userModule.update({
         where: { id: userModule.id },
         data: { enable, complete }

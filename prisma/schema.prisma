@@ -133,7 +133,7 @@ model QuestionOption {
   question Question @relation(fields: [questionId], references: [id])
   questionId String
 
-  userQuestionAnswers UserQuestionAnswer[]
+  userQuestionAnswer UserQuestionAnswer?
 }
 
 model User {
@@ -177,7 +177,7 @@ model UserBlock {
   enable Boolean
   complete Boolean
   completeMaterials Boolean
-  completeQuestions Boolean
+  completeQuestions Boolean?
   completeTasks Boolean
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -190,7 +190,7 @@ model UserBlock {
 }
 model UserMaterial {
   id String @id @default(uuid())
-  complete Boolean
+  complete Boolean?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -202,7 +202,7 @@ model UserMaterial {
 }
 model UserTask {
   id String @id @default(uuid())
-  complete Boolean
+  complete Boolean?
   sent Boolean?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -229,7 +229,8 @@ model UserTaskDocument {
 }
 model UserQuestion {
   id String @id @default(uuid())
-  complete Boolean
+  complete Boolean?
+  sent Boolean?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -241,15 +242,14 @@ model UserQuestion {
 }
 model UserQuestionAnswer {
   id String @id @default(uuid())
-  complete Boolean
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   question Question @relation(fields: [questionId], references: [id])
   questionId String
 
-  option QuestionOption @relation(fields: [optionId], references: [id])
-  optionId String
+  questionOption QuestionOption? @relation(fields: [questionOptionId], references: [id])
+  questionOptionId String @unique
 
   user User @relation(fields: [userId], references: [id])
   userId String

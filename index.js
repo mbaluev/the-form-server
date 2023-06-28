@@ -71,7 +71,7 @@ const routerModule = require("./prisma/router/module");
 const routerBlock = require("./prisma/router/block");
 const routerMaterial = require("./prisma/router/material");
 const routerTask = require("./prisma/router/task");
-// const routerQuestion = require("./prisma/router/question");
+const routerQuestion = require("./prisma/router/question");
 app.use('/api/auth', routerAuth);
 app.use('/api/user', routerUser);
 app.use('/api/documentType', routerDocumentType);
@@ -80,7 +80,7 @@ app.use('/api/module', routerModule);
 app.use('/api/block', routerBlock);
 app.use('/api/material', routerMaterial);
 app.use('/api/task', routerTask);
-// app.use('/api/question', routerQuestion);
+app.use('/api/question', routerQuestion);
 
 // files
 const fs = require('fs');
