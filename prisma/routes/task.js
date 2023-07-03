@@ -88,7 +88,7 @@ const create = async (req, res) => {
 const update = async (req, res) => {
   try {
     handlers.validateRequest(req, 'blockId',
-      'document.id', 'document.documentTypeId', 'document.description');
+      'document.id', 'document.documentTypeId');
     const id = req.params.id;
     const userId = req.user.id;
     await prisma.document.update({
@@ -96,7 +96,6 @@ const update = async (req, res) => {
       data: {
         documentTypeId: req.body.document.documentTypeId,
         name: req.body.document.name,
-        description: req.body.document.description,
         userId,
       }
     })

@@ -151,6 +151,7 @@ const userList = async (req, res) => {
         block.completeMaterials = userBlock?.completeMaterials
         block.completeQuestions = userBlock?.completeQuestions
         block.completeTasks = userBlock?.completeTasks
+        block.errorQuestions = userBlock?.errorQuestions
       }
       userModules.push({
         ...module,
@@ -199,6 +200,7 @@ const userItem = async (req, res) => {
         block.completeMaterials = userBlock?.completeMaterials
         block.completeQuestions = userBlock?.completeQuestions
         block.completeTasks = userBlock?.completeTasks
+        block.errorQuestions = userBlock?.errorQuestions
       }
       module.enable = userModule?.enable
       module.complete = userModule?.complete
@@ -229,6 +231,7 @@ const userItem = async (req, res) => {
         block.completeMaterials = userBlock?.completeMaterials
         block.completeQuestions = userBlock?.completeQuestions
         block.completeTasks = userBlock?.completeTasks
+        block.errorQuestions = userBlock?.errorQuestions
       }
       module.enable = userModule?.enable
       module.complete = userModule?.complete

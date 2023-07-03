@@ -43,9 +43,10 @@ exports.verifyUser = [
 exports.verifyStudent = [
   passport.authenticate('jwt-student', { session: false }),
   routeUser.checkTables,
-  routeUser.checkBlocks,
-  routeUser.checkModules,
-  routeUser.checkFirst
+  routeUser.checkBlocksComplete,
+  routeUser.checkModulesComplete,
+  routeUser.nextModuleEnable,
+  routeUser.nextBlockEnable,
 ]
 
 exports.verifyAdmin = [

@@ -158,7 +158,7 @@ const checkTables = async (req, res, next) => {
             complete: false,
             completeMaterials: false,
             completeQuestions: false,
-            completeTasks: false
+            completeTasks: false,
           }
         })
       }
@@ -213,6 +213,7 @@ const checkTables = async (req, res, next) => {
             questionId: question.id,
             userId,
             complete: null,
+            error: null
           }
         })
       }
@@ -225,18 +226,10 @@ const checkTables = async (req, res, next) => {
     await prisma.$disconnect()
   }
 }
-const checkBlocks = async (req, res, next) => {
+const checkBlocksComplete = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const userBlocks = await prisma.userBlock.findMany({
-      include: {
-        block: {
-          select: {
-            position: true,
-            moduleId: true
-          }
-        }
-      },
       where: { userId }
     })
     for (const userBlock of userBlocks) {
@@ -281,58 +274,20 @@ const checkBlocks = async (req, res, next) => {
       const completeTasks = !hasTasks ? false : userTasks.reduce((prev, curr) => {
         return prev && Boolean(curr.complete)
       }, true);
-      const completeQuestions = !hasQuestions ? null : userQuestions.reduce((prev, curr) => {
-        if (prev === false || curr.complete === false) return false;
-        if (prev && Boolean(curr.complete)) return true;
-        return null;
+      const completeQuestions = !hasQuestions ? false : userQuestions.reduce((prev, curr) => {
+        return prev && Boolean(curr.complete)
       }, true);
 
       const complete = Boolean(completeMaterials && completeTasks && completeQuestions);
-      const enable = hasMaterials && hasTasks && hasQuestions
       await prisma.userBlock.update({
         where: { id: userBlock.id },
         data: {
-          enable,
           complete,
           completeMaterials,
           completeTasks,
           completeQuestions
         }
       })
-      if (complete) {
-        const nextUserBlock = await prisma.userBlock.findFirst({
-          include: {
-            block: {
-              select: {
-                moduleId: true,
-                position: true
-              }
-            }
-          },
-          where: {
-            userId,
-            block: {
-              is: {
-                moduleId: userBlock.block.moduleId,
-                position: {
-                  gt: userBlock.block.position
-                }
-              }
-            }
-          },
-          orderBy: {
-            block: {
-              position: 'asc'
-            }
-          }
-        })
-        if (nextUserBlock) {
-          await prisma.userBlock.update({
-            where: { id: nextUserBlock.id },
-            data: { enable: true }
-          })
-        }
-      }
     }
     next();
   } catch (err) {
@@ -341,14 +296,18 @@ const checkBlocks = async (req, res, next) => {
     await prisma.$disconnect()
   }
 }
-const checkModules = async (req, res, next) => {
+const checkModulesComplete = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const userModules = await prisma.userModule.findMany({
       include: {
         module: {
-          select: {
-            position: true
+          include: {
+            blocks: {
+              include: {
+                userBlocks: true
+              }
+            }
           }
         }
       },
@@ -365,43 +324,46 @@ const checkModules = async (req, res, next) => {
           userId,
           block: {
             is: {
-              moduleId: userModule?.blockId
+              moduleId: userModule?.moduleId
             }
           }
         }
       })
       const hasBlocks = userBlocks.length > 0
-
-      const complete = !hasBlocks ? false : userBlocks.reduce((prev, curr) => (prev && curr.complete), true);
-      const enable = userBlocks.reduce((prev, curr) => (prev && curr.enable), false);
+      const complete = !hasBlocks ? false : userBlocks.reduce((prev, curr) => {
+        return prev && Boolean(curr.complete)
+      }, true);
       await prisma.userModule.update({
         where: { id: userModule.id },
-        data: { enable, complete }
+        data: { complete }
       })
-      if (complete) {
+    }
+    next();
+  } catch (err) {
+    await handlers.errorHandler(res, err);
+  } finally {
+    await prisma.$disconnect()
+  }
+}
+const nextModuleEnable = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const userModules = await prisma.userModule.findMany({
+      where: { userId },
+      include: { module: true },
+      orderBy: { module: { position: 'asc' } }
+    })
+    // check first
+    await prisma.userModule.update({
+      where: { id: userModules[0].id },
+      data: { enable: true }
+    })
+    // check next
+    for (const userModule of userModules) {
+      if (userModule.complete) {
         const nextUserModule = await prisma.userModule.findFirst({
-          include: {
-            module: {
-              select: {
-                position: true
-              }
-            }
-          },
-          where: {
-            userId,
-            module: {
-              is: {
-                position: {
-                  gt: userModule.module.position
-                }
-              }
-            }
-          },
-          orderBy: {
-            module: {
-              position: 'asc'
-            }
-          }
+          where: { userId, module: { is: { position: { gt: userModule.module.position } } } },
+          orderBy: { module: { position: 'asc' } }
         })
         if (nextUserModule) {
           await prisma.userModule.update({
@@ -418,56 +380,39 @@ const checkModules = async (req, res, next) => {
     await prisma.$disconnect()
   }
 }
-const checkFirst = async (req, res, next) => {
+const nextBlockEnable = async (req, res, next) => {
   try {
     const userId = req.user.id;
-
-    // check first module enable
     const userModule = await prisma.userModule.findFirst({
-      include: {
-        module: {
-          select: {
-            position: true
-          }
-        }
-      },
-      where: { userId },
-      orderBy: {
-        module: {
-          position: 'asc'
+      where: { userId, enable: true, complete: false },
+      include: { module: true },
+      orderBy: { module: { position: 'asc' } }
+    })
+    const userBlocks = await prisma.userBlock.findMany({
+      include: { block: true },
+      where: { userId, block: { is: { moduleId: userModule.module.id } } },
+      orderBy: { block: { position: 'asc' } }
+    })
+    // check first
+    await prisma.userBlock.update({
+      where: { id: userBlocks[0].id },
+      data: { enable: true }
+    })
+    // check next
+    for (const userBlock of userBlocks) {
+      if (userBlock.complete) {
+        const nextUserBlock = await prisma.userBlock.findFirst({
+          where: { userId, block: { is: { position: { gt: userBlock.block.position } } } },
+          orderBy: { block: { position: 'asc' } }
+        })
+        if (nextUserBlock) {
+          await prisma.userBlock.update({
+            where: { id: nextUserBlock.id },
+            data: { enable: true }
+          })
         }
       }
-    })
-    if (userModule && !userModule?.enable) {
-      await prisma.userModule.update({
-        where: { id: userModule?.id },
-        data: { enable: true }
-      });
     }
-
-    // check first block enable
-    const userBlock = await prisma.userBlock.findFirst({
-      where: {
-        userId,
-        block: {
-          is: {
-            moduleId: userModule?.moduleId
-          }
-        }
-      },
-      orderBy: {
-        block: {
-          position: 'asc'
-        }
-      }
-    })
-    if (userBlock && !userBlock?.enable) {
-      await prisma.userBlock.update({
-        where: { id: userBlock?.id },
-        data: { enable: true }
-      });
-    }
-
     next();
   } catch (err) {
     await handlers.errorHandler(res, err);
@@ -484,7 +429,8 @@ module.exports = {
   del,
   me,
   checkTables,
-  checkBlocks,
-  checkModules,
-  checkFirst
+  checkBlocksComplete,
+  checkModulesComplete,
+  nextBlockEnable,
+  nextModuleEnable,
 }

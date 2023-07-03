@@ -162,6 +162,7 @@ const userList = async (req, res) => {
   try {
     handlers.validateRequest(req, 'blockId');
     const blockId = req.body.blockId;
+    const userId = req.user.id;
     const questions = (await prisma.question.findMany({
       where: { blockId },
       include: {
@@ -174,13 +175,16 @@ const userList = async (req, res) => {
         userQuestions: {
           select: {
             complete: true,
-            sent: true
-          }
+            error: true
+          },
+          where: { userId }
         },
         userQuestionAnswers: {
           select: {
-            questionOptionId: true
-          }
+            questionOptionId: true,
+            comment: true
+          },
+          where: { userId }
         }
       },
       orderBy: {
@@ -189,8 +193,8 @@ const userList = async (req, res) => {
     })).map(item => {
       const { userQuestions, userQuestionAnswers, ...userQuestion } = item;
       userQuestion.complete = userQuestions?.[0]?.complete;
-      userQuestion.sent = userQuestions?.[0]?.sent;
-      userQuestion.questionAnswers = userQuestionAnswers.map(d => d.questionOptionId);
+      userQuestion.error = userQuestions?.[0]?.error;
+      userQuestion.questionAnswers = userQuestionAnswers;
       return userQuestion;
     })
     res.status(200).send({
@@ -206,6 +210,7 @@ const userList = async (req, res) => {
 const userItem = async (req, res) => {
   try {
     const id = req.params.id;
+    const userId = req.user.id;
     const question = await prisma.question.findUnique({
       where: { id },
       include: {
@@ -219,13 +224,16 @@ const userItem = async (req, res) => {
         userQuestions: {
           select: {
             complete: true,
-            sent: true
-          }
+            error: true
+          },
+          where: { userId }
         },
         userQuestionAnswers: {
           select: {
-            questionOptionId: true
-          }
+            questionOptionId: true,
+            comment: true
+          },
+          where: { userId }
         }
       },
     });
@@ -236,8 +244,8 @@ const userItem = async (req, res) => {
       title: d.title
     }));
     userQuestion.complete = userQuestions?.[0]?.complete;
-    userQuestion.sent = userQuestions?.[0]?.sent;
-    userQuestion.questionAnswers = userQuestionAnswers.map(d => d.questionOptionId);
+    userQuestion.error = userQuestions?.[0]?.error;
+    userQuestion.questionAnswers = userQuestionAnswers;
     userQuestion.type = isRadio ? 'radio' : 'checkbox';
     res.status(200).send({
       success: true,
@@ -292,21 +300,59 @@ const userSave = async (req, res) => {
 const userCheck = async (req, res) => {
   try {
     handlers.validateRequest(req, 'blockId');
-    handlers.validateRequest(req, 'questions');
 
-    // const blockId = req.body.blockId;
-    // const questions = req.body.questions;
-    // const userId = req.user.id;
+    const blockId = req.body.blockId;
+    const userId = req.user.id;
 
-    // await questionService.checkAnswersByBlockIdUser(client, blockId, questions, userId);
-    // const { questions: questionsUpdated } = await questionService.getQuestionsByBlockIdUser(client, blockId, userId);
-    // await blockService.updateBlockUser(client, id, userId);
-    // await moduleService.updateModuleUser(client, id, userId);
-    const questionsUpdated = [];
+    await prisma.$transaction(async (tx) => {
+      let errorQuestions = false;
+      const questions = await tx.question.findMany({
+        where: { blockId },
+        include: {
+          questionOptions: {
+            select: {
+              id: true,
+              title: true,
+              correct: true,
+            },
+          },
+          userQuestions: {
+            select: {
+              id: true,
+            },
+            where: { userId }
+          },
+          userQuestionAnswers: {
+            where: { userId }
+          }
+        },
+        orderBy: {
+          position: 'asc'
+        }
+      })
+      for (const question of questions) {
+        const userQuestionId = question.userQuestions?.[0]?.id;
+        const correct = question.questionOptions.filter(d => d.correct).map(d => d.id);
+        const answers = question.userQuestionAnswers.map(d => d.questionOptionId);
+        const error = correct.sort().toString() !== answers.sort().toString();
+        if (error) errorQuestions = true;
+        await tx.userQuestion.update({
+          where: { id: userQuestionId },
+          data: { complete: true, error }
+        })
+      }
+
+      const userBlock = await tx.userBlock.findFirst({
+        where: { blockId }
+      })
+      await tx.userBlock.update({
+        where: { id: userBlock.id },
+        data: { completeQuestions: true, errorQuestions }
+      })
+    })
 
     res.status(200).send({
-      success: true,
-      data: questionsUpdated
+      success: true
     });
   } catch (err) {
     await handlers.errorHandler(res, err);

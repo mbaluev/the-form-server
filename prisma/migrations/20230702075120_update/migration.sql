@@ -1,0 +1,9 @@
+-- AlterTable
+ALTER TABLE "UserQuestion" ALTER COLUMN "complete" DROP NOT NULL,
+ALTER COLUMN "complete" DROP DEFAULT,
+ALTER COLUMN "error" DROP NOT NULL,
+ALTER COLUMN "error" DROP DEFAULT;
+
+-- AlterTable
+ALTER TABLE "UserQuestionAnswer" ALTER COLUMN "error" DROP NOT NULL,
+ALTER COLUMN "error" DROP DEFAULT;

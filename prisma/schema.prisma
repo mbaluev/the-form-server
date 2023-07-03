@@ -161,8 +161,8 @@ model User {
 }
 model UserModule {
   id String @id @default(uuid())
-  enable Boolean
-  complete Boolean
+  enable Boolean @default(false)
+  complete Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -174,11 +174,12 @@ model UserModule {
 }
 model UserBlock {
   id String @id @default(uuid())
-  enable Boolean
-  complete Boolean
-  completeMaterials Boolean
-  completeQuestions Boolean?
-  completeTasks Boolean
+  enable Boolean @default(false)
+  complete Boolean @default(false)
+  completeMaterials Boolean @default(false)
+  completeQuestions Boolean @default(false)
+  completeTasks Boolean @default(false)
+  errorQuestions Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -230,7 +231,7 @@ model UserTaskDocument {
 model UserQuestion {
   id String @id @default(uuid())
   complete Boolean?
-  sent Boolean?
+  error Boolean?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -242,6 +243,7 @@ model UserQuestion {
 }
 model UserQuestionAnswer {
   id String @id @default(uuid())
+  comment String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
