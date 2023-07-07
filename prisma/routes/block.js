@@ -128,6 +128,7 @@ const userItem = async (req, res) => {
       completeQuestions: userBlock?.completeQuestions,
       completeTasks: userBlock?.completeTasks,
       errorQuestions: userBlock?.errorQuestions,
+      commentQuestions: userBlock?.commentQuestions
     }
     res.status(200).send({
       success: true,

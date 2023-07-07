@@ -175,14 +175,15 @@ const userList = async (req, res) => {
         userQuestions: {
           select: {
             complete: true,
-            error: true
+            error: true,
+            comment: true
           },
           where: { userId }
         },
         userQuestionAnswers: {
           select: {
             questionOptionId: true,
-            comment: true
+            commentText: true
           },
           where: { userId }
         }
@@ -194,6 +195,7 @@ const userList = async (req, res) => {
       const { userQuestions, userQuestionAnswers, ...userQuestion } = item;
       userQuestion.complete = userQuestions?.[0]?.complete;
       userQuestion.error = userQuestions?.[0]?.error;
+      userQuestion.comment = userQuestions?.[0]?.comment;
       userQuestion.questionAnswers = userQuestionAnswers;
       return userQuestion;
     })
@@ -224,14 +226,15 @@ const userItem = async (req, res) => {
         userQuestions: {
           select: {
             complete: true,
-            error: true
+            error: true,
+            comment: true
           },
           where: { userId }
         },
         userQuestionAnswers: {
           select: {
             questionOptionId: true,
-            comment: true
+            commentText: true
           },
           where: { userId }
         }
@@ -245,6 +248,7 @@ const userItem = async (req, res) => {
     }));
     userQuestion.complete = userQuestions?.[0]?.complete;
     userQuestion.error = userQuestions?.[0]?.error;
+    userQuestion.comment = userQuestions?.[0]?.comment;
     userQuestion.questionAnswers = userQuestionAnswers;
     userQuestion.type = isRadio ? 'radio' : 'checkbox';
     res.status(200).send({
