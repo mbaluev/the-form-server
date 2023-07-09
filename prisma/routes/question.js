@@ -365,6 +365,68 @@ const userCheck = async (req, res) => {
   }
 }
 
+const adminList = async (req, res) => {
+  try {
+    const userQuestions = await prisma.userQuestion.findMany({
+      include: {
+        user: {
+          select: {
+            username: true,
+            firstname: true,
+            lastname: true
+          }
+        },
+        question: {
+          include: {
+            block: true,
+          }
+        },
+      },
+      orderBy: {
+        updatedAt: 'desc'
+      }
+    });
+    res.status(200).send({
+      success: true,
+      data: userQuestions
+    });
+  } catch (err) {
+    await handlers.errorHandler(res, err);
+  } finally {
+    await prisma.$disconnect()
+  }
+}
+const adminItem = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const userQuestion = await prisma.userQuestion.findUnique({
+      where: { id },
+      include: {
+        user: {
+          select: {
+            username: true,
+            firstname: true,
+            lastname: true
+          }
+        },
+        question: {
+          include: {
+            block: true,
+          }
+        },
+      }
+    });
+    res.status(200).send({
+      success: true,
+      data: userQuestion
+    });
+  } catch (err) {
+    await handlers.errorHandler(res, err);
+  } finally {
+    await prisma.$disconnect()
+  }
+}
+
 module.exports = {
   list,
   item,
@@ -375,5 +437,8 @@ module.exports = {
   userList,
   userItem,
   userSave,
-  userCheck
+  userCheck,
+
+  adminList,
+  adminItem
 }

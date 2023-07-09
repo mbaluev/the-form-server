@@ -14,4 +14,7 @@ router.get("/user/item/:id", verifyAdmin, routeQuestion.userItem);
 router.post("/user/save", verifyStudent, routeQuestion.userSave);
 router.post("/user/check", verifyStudent, routeQuestion.userCheck);
 
+router.post("/admin/list", verifyAdmin, routeQuestion.adminList);
+router.get("/admin/item/:id", verifyAdmin, routeQuestion.adminItem);
+
 module.exports = router
