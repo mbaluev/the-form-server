@@ -4,7 +4,14 @@ const prisma = new PrismaClient()
 
 const list = async (req, res) => {
   try {
+    const search = req.body.search || '';
     const modules = await prisma.module.findMany({
+      where: {
+        OR: [
+          { name: { contains: search, mode: 'insensitive' } },
+          { title: { contains: search, mode: 'insensitive' } },
+        ]
+      },
       orderBy: { position: 'asc' }
     });
     res.status(200).send({
@@ -21,16 +28,23 @@ const item = async (req, res) => {
   try {
     const id = req.params.id;
     const blockId = req.body.blockId;
-    const module = await prisma.module.findFirst({
-      where: {
-        id,
-        blocks: { some: { blockId } }
-      }
-    })
-    res.status(200).send({
-      success: true,
-      data: module
-    });
+    if (blockId) {
+      const module = await prisma.module.findFirst({
+        where: { blocks: { some: { blockId } } }
+      })
+      res.status(200).send({
+        success: true,
+        data: module
+      });
+    } else {
+      const module = await prisma.module.findFirst({
+        where: { id }
+      })
+      res.status(200).send({
+        success: true,
+        data: module
+      });
+    }
   } catch (err) {
     await handlers.errorHandler(res, err);
   } finally {
@@ -123,27 +137,41 @@ const userList = async (req, res) => {
 const userItem = async (req, res) => {
   try {
     const id = req.params.id;
-    const blockId = req.body.blockId;
+    const userBlockId = req.body.userBlockId;
     const userId = req.user.id;
-    const userModule = await prisma.userModule.findFirst({
-      where: {
-        id,
-        userId,
-        userBlocks: { some: { blockId } }
-      },
-      include: {
-        module: true,
-        userBlocks: {
-          include: { block: true },
-          orderBy: { block: { position: "asc" } }
+    if (userBlockId) {
+      const userModule = await prisma.userModule.findFirst({
+        where: { userId, userBlocks: { some: { id: userBlockId } } },
+        include: {
+          module: true,
+          userBlocks: {
+            include: { block: true },
+            orderBy: { block: { position: "asc" } }
+          },
         },
-      },
-      orderBy: { module: { position: "asc" } }
-    })
-    res.status(200).send({
-      success: true,
-      data: userModule
-    });
+        orderBy: { module: { position: "asc" } }
+      })
+      res.status(200).send({
+        success: true,
+        data: userModule
+      });
+    } else {
+      const userModule = await prisma.userModule.findFirst({
+        where: { id, userId },
+        include: {
+          module: true,
+          userBlocks: {
+            include: { block: true },
+            orderBy: { block: { position: "asc" } }
+          },
+        },
+        orderBy: { module: { position: "asc" } }
+      })
+      res.status(200).send({
+        success: true,
+        data: userModule
+      });
+    }
   } catch (err) {
     await handlers.errorHandler(res, err);
   } finally {
