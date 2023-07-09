@@ -114,25 +114,13 @@ const userItem = async (req, res) => {
   try {
     const id = req.params.id;
     const userId = req.user.id;
-    const block = await prisma.block.findUnique({
-      where: { id }
-    })
     const userBlock = await prisma.userBlock.findFirst({
-      where: { blockId: id, userId }
+      where: { id, userId },
+      include: { block: true }
     })
-    const retBlock = {
-      ... block,
-      enable: userBlock?.enable,
-      complete: userBlock?.complete,
-      completeMaterials: userBlock?.completeMaterials,
-      completeQuestions: userBlock?.completeQuestions,
-      completeTasks: userBlock?.completeTasks,
-      errorQuestions: userBlock?.errorQuestions,
-      commentQuestions: userBlock?.commentQuestions
-    }
     res.status(200).send({
       success: true,
-      data: retBlock
+      data: userBlock
     });
   } catch (err) {
     await handlers.errorHandler(res, err);

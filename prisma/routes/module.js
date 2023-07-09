@@ -4,17 +4,8 @@ const prisma = new PrismaClient()
 
 const list = async (req, res) => {
   try {
-    const search = req.body.search || '';
     const modules = await prisma.module.findMany({
-      where: {
-        OR: [
-          { name: { contains: search, mode: 'insensitive' } },
-          { title: { contains: search, mode: 'insensitive' } },
-        ]
-      },
-      orderBy: {
-        position: 'asc'
-      }
+      orderBy: { position: 'asc' }
     });
     res.status(200).send({
       success: true,
@@ -30,29 +21,16 @@ const item = async (req, res) => {
   try {
     const id = req.params.id;
     const blockId = req.body.blockId;
-    if (blockId) {
-      const module = await prisma.module.findFirst({
-        where: {
-          blocks: {
-            some: {
-              blockId
-            }
-          }
-        }
-      })
-      res.status(200).send({
-        success: true,
-        data: module
-      });
-    } else {
-      const module = await prisma.module.findFirst({
-        where: { id }
-      })
-      res.status(200).send({
-        success: true,
-        data: module
-      });
-    }
+    const module = await prisma.module.findFirst({
+      where: {
+        id,
+        blocks: { some: { blockId } }
+      }
+    })
+    res.status(200).send({
+      success: true,
+      data: module
+    });
   } catch (err) {
     await handlers.errorHandler(res, err);
   } finally {
@@ -121,46 +99,17 @@ const del = async (req, res) => {
 const userList = async (req, res) => {
   try {
     const userId = req.user.id;
-    const modules = await prisma.module.findMany({
-      orderBy: {
-        position: 'asc'
-      }
-    });
-    const userModules = [];
-    for (const module of modules) {
-      const userModule = await prisma.userModule.findFirst({
-        where: {
-          userId,
-          moduleId: module.id
-        }
-      })
-      const blocks = await prisma.block.findMany({
-        where: {
-          moduleId: module.id
+    const userModules = await prisma.userModule.findMany({
+      where: { userId },
+      include: {
+        module: true,
+        userBlocks: {
+          include: { block: true },
+          orderBy: { block: { position: "asc" } }
         },
-        orderBy: {
-          position: 'asc'
-        }
-      })
-      for (const block of blocks) {
-        const userBlock = await prisma.userBlock.findFirst({
-          where: { blockId: block.id }
-        })
-        block.enable = userBlock?.enable
-        block.complete = userBlock?.complete
-        block.completeMaterials = userBlock?.completeMaterials
-        block.completeQuestions = userBlock?.completeQuestions
-        block.completeTasks = userBlock?.completeTasks
-        block.errorQuestions = userBlock?.errorQuestions
-        block.commentQuestions = userBlock?.commentQuestions
-      }
-      userModules.push({
-        ...module,
-        enable: userModule?.enable || false,
-        complete: userModule?.complete || false,
-        blocks
-      })
-    }
+      },
+      orderBy: { module: { position: "asc" } }
+    })
     res.status(200).send({
       success: true,
       data: userModules
@@ -176,73 +125,25 @@ const userItem = async (req, res) => {
     const id = req.params.id;
     const blockId = req.body.blockId;
     const userId = req.user.id;
-    if (blockId) {
-      const block = await prisma.block.findUnique({
-        where: { id: blockId }
-      })
-      const module = await prisma.module.findUnique({
-        where: { id: block?.moduleId }
-      });
-      const userModule = await prisma.userModule.findFirst({
-        where: { userId, moduleId: module.id }
-      });
-      const blocks = await prisma.block.findMany({
-        where: { moduleId: module.id },
-        orderBy: {
-          position: 'asc'
-        }
-      })
-      for (const block of blocks) {
-        const userBlock = await prisma.userBlock.findFirst({
-          where: { blockId: block.id }
-        })
-        block.enable = userBlock?.enable
-        block.complete = userBlock?.complete
-        block.completeMaterials = userBlock?.completeMaterials
-        block.completeQuestions = userBlock?.completeQuestions
-        block.completeTasks = userBlock?.completeTasks
-        block.errorQuestions = userBlock?.errorQuestions
-        block.commentQuestions = userBlock?.commentQuestions
-      }
-      module.enable = userModule?.enable
-      module.complete = userModule?.complete
-      module.blocks = blocks;
-      res.status(200).send({
-        success: true,
-        data: module
-      });
-    } else if (id) {
-      const module = await prisma.module.findFirst({
-        where: { id }
-      });
-      const userModule = await prisma.userModule.findFirst({
-        where: { userId, moduleId: id }
-      });
-      const blocks = await prisma.block.findMany({
-        where: { moduleId: id },
-        orderBy: {
-          position: 'asc'
-        }
-      })
-      for (const block of blocks) {
-        const userBlock = await prisma.userBlock.findFirst({
-          where: { blockId: block.id }
-        })
-        block.enable = userBlock?.enable
-        block.complete = userBlock?.complete
-        block.completeMaterials = userBlock?.completeMaterials
-        block.completeQuestions = userBlock?.completeQuestions
-        block.completeTasks = userBlock?.completeTasks
-        block.errorQuestions = userBlock?.errorQuestions
-      }
-      module.enable = userModule?.enable
-      module.complete = userModule?.complete
-      module.blocks = blocks;
-      res.status(200).send({
-        success: true,
-        data: module
-      });
-    }
+    const userModule = await prisma.userModule.findFirst({
+      where: {
+        id,
+        userId,
+        userBlocks: { some: { blockId } }
+      },
+      include: {
+        module: true,
+        userBlocks: {
+          include: { block: true },
+          orderBy: { block: { position: "asc" } }
+        },
+      },
+      orderBy: { module: { position: "asc" } }
+    })
+    res.status(200).send({
+      success: true,
+      data: userModule
+    });
   } catch (err) {
     await handlers.errorHandler(res, err);
   } finally {

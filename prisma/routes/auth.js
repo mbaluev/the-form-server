@@ -67,12 +67,9 @@ const signUp = async (req, res) => {
 const signOut = async (req, res) => {
   try {
     const id = req.user.id;
-    const user = await prisma.user.findUnique({
+    await prisma.user.findUniqueOrThrow({
       where: { id }
     })
-    if (!user) {
-      handlers.throwError(401, "Unauthorized");
-    }
     await prisma.user.update({
       where: { id },
       data: { refreshToken: null }
@@ -89,24 +86,14 @@ const signOut = async (req, res) => {
 }
 const token = async (req, res) => {
   try {
-    const { signedCookies = {} } = req
-    const { refreshToken } = signedCookies
-    if (!refreshToken) {
-      handlers.throwError(401, "Unauthorized");
-    }
-
+    const { signedCookies: { refreshToken } } = req
+    if (!refreshToken) handlers.throwError(401, "Unauthorized");
     const payload = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
     const id = payload.id;
-    const user = await prisma.user.findUnique({
+    const user = await prisma.user.findUniqueOrThrow({
       where: { id }
     });
-    if (!user) {
-      handlers.throwError(401, "Unauthorized");
-    }
-    if (user.refreshToken !== refreshToken) {
-      handlers.throwError(401, "Unauthorized");
-    }
-
+    if (user.refreshToken !== refreshToken) handlers.throwError(401, "Unauthorized");
     const newToken = getToken({
       id: user.id,
       firstname: user.firstname,
@@ -116,7 +103,6 @@ const token = async (req, res) => {
       paid: user.paid,
       admin: user.admin
     });
-
     res.cookie("refreshToken", refreshToken, COOKIE_OPTIONS)
     res.status(200).send({
       success: true,
@@ -130,24 +116,14 @@ const token = async (req, res) => {
 }
 const refreshToken = async (req, res) => {
   try {
-    const { signedCookies = {} } = req
-    const { refreshToken } = signedCookies
-    if (!refreshToken) {
-      handlers.throwError(401, "Unauthorized");
-    }
-
+    const { signedCookies: { refreshToken } } = req
+    if (!refreshToken) handlers.throwError(401, "Unauthorized");
     const payload = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
     const id = payload.id;
-    const user = await prisma.user.findUnique({
+    const user = await prisma.user.findUniqueOrThrow({
       where: { id }
     });
-    if (!user) {
-      handlers.throwError(401, "Unauthorized");
-    }
-    if (user.refreshToken !== refreshToken) {
-      handlers.throwError(401, "Unauthorized");
-    }
-
+    if (user.refreshToken !== refreshToken) handlers.throwError(401, "Unauthorized");
     const newToken = getToken({
       id: user.id,
       firstname: user.firstname,
@@ -162,7 +138,6 @@ const refreshToken = async (req, res) => {
       where: { id },
       data: { refreshToken: newRefreshToken }
     })
-
     res.cookie("refreshToken", newRefreshToken, COOKIE_OPTIONS)
     res.status(200).send({
       success: true,

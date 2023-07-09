@@ -22,15 +22,15 @@ model Document {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  documentType DocumentType @relation(fields: [documentTypeId], references: [id])
+  // foreign keys
   documentTypeId String
-
-  file File? @relation(fields: [fileId], references: [id])
+  documentType DocumentType @relation(fields: [documentTypeId], references: [id])
   fileId String? @unique
-
-  user User @relation(fields: [userId], references: [id])
+  file File? @relation(fields: [fileId], references: [id])
   userId String
+  user User @relation(fields: [userId], references: [id])
 
+  // references
   material Material?
   task Task?
   userTaskDocument UserTaskDocument?
@@ -41,6 +41,7 @@ model DocumentType {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // references
   documents Document[]
 }
 model File {
@@ -52,6 +53,7 @@ model File {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // references
   document Document?
 }
 
@@ -63,6 +65,7 @@ model Module {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // references
   blocks Block[]
   userModules UserModule[]
 }
@@ -74,9 +77,11 @@ model Block {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  module Module @relation(fields: [moduleId], references: [id])
+  // foreign keys
   moduleId String
+  module Module? @relation(fields: [moduleId], references: [id])
 
+  // references
   materials Material[]
   tasks Task[]
   questions Question[]
@@ -87,12 +92,13 @@ model Material {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  block Block @relation(fields: [blockId], references: [id])
+  // foreign keys
   blockId String
-
-  document Document @relation(fields: [documentId], references: [id])
+  block Block? @relation(fields: [blockId], references: [id])
   documentId String @unique
+  document Document? @relation(fields: [documentId], references: [id])
 
+  // references
   userMaterials UserMaterial[]
 }
 model Task {
@@ -100,14 +106,14 @@ model Task {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  block Block @relation(fields: [blockId], references: [id])
+  // foreign keys
   blockId String
-
-  document Document @relation(fields: [documentId], references: [id])
+  block Block? @relation(fields: [blockId], references: [id])
   documentId String @unique
+  document Document? @relation(fields: [documentId], references: [id])
 
+  // references
   userTasks UserTask[]
-  userTaskDocuments UserTaskDocument[]
 }
 model Question {
   id String @id @default(uuid())
@@ -116,12 +122,13 @@ model Question {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  block Block @relation(fields: [blockId], references: [id])
+  // foreign keys
   blockId String
+  block Block? @relation(fields: [blockId], references: [id])
 
+  // references
   questionOptions QuestionOption[]
   userQuestions UserQuestion[]
-  userQuestionAnswers UserQuestionAnswer[]
 }
 model QuestionOption {
   id String @id @default(uuid())
@@ -130,10 +137,12 @@ model QuestionOption {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  question Question @relation(fields: [questionId], references: [id])
+  // foreign keys
   questionId String
+  question Question? @relation(fields: [questionId], references: [id])
 
-  userQuestionAnswer UserQuestionAnswer?
+  // references
+  userQuestionAnswers UserQuestionAnswer[]
 }
 
 model User {
@@ -150,6 +159,7 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // references
   userDocuments Document[]
   userModules UserModule[]
   userBlocks UserBlock[]
@@ -166,11 +176,14 @@ model UserModule {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  module Module @relation(fields: [moduleId], references: [id])
+  // foreign keys
   moduleId String
-
-  user User @relation(fields: [userId], references: [id])
+  module Module? @relation(fields: [moduleId], references: [id])
   userId String
+  user User? @relation(fields: [userId], references: [id])
+
+  // references
+  userBlocks UserBlock[]
 }
 model UserBlock {
   id String @id @default(uuid())
@@ -184,11 +197,18 @@ model UserBlock {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  block Block @relation(fields: [blockId], references: [id])
+  // foreign keys
   blockId String
-
-  user User @relation(fields: [userId], references: [id])
+  block Block? @relation(fields: [blockId], references: [id])
   userId String
+  user User? @relation(fields: [userId], references: [id])
+  userModuleId String
+  userModule UserModule? @relation(fields: [userModuleId], references: [id])
+
+  // references
+  userMaterials UserMaterial[]
+  userTasks UserTask[]
+  userQuestions UserQuestion[]
 }
 model UserMaterial {
   id String @id @default(uuid())
@@ -196,11 +216,13 @@ model UserMaterial {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  material Material @relation(fields: [materialId], references: [id])
+  // foreign keys
   materialId String
-
-  user User @relation(fields: [userId], references: [id])
+  material Material? @relation(fields: [materialId], references: [id])
   userId String
+  user User? @relation(fields: [userId], references: [id])
+  userBlockId String
+  userBlock UserBlock? @relation(fields: [userBlockId], references: [id])
 }
 model UserTask {
   id String @id @default(uuid())
@@ -209,25 +231,29 @@ model UserTask {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  task Task @relation(fields: [taskId], references: [id])
+  // foreign keys
   taskId String
-
-  user User @relation(fields: [userId], references: [id])
+  task Task? @relation(fields: [taskId], references: [id])
   userId String
+  user User? @relation(fields: [userId], references: [id])
+  userBlockId String
+  userBlock UserBlock? @relation(fields: [userBlockId], references: [id])
+
+  // references
+  userTaskDocuments UserTaskDocument[]
 }
 model UserTaskDocument {
   id String @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  task Task @relation(fields: [taskId], references: [id])
-  taskId String
-
-  user User @relation(fields: [userId], references: [id])
+  // foreign keys
   userId String
-
-  document Document @relation(fields: [documentId], references: [id])
+  user User? @relation(fields: [userId], references: [id])
   documentId String @unique
+  document Document? @relation(fields: [documentId], references: [id])
+  userTaskId String
+  userTask UserTask? @relation(fields: [userTaskId], references: [id])
 }
 model UserQuestion {
   id String @id @default(uuid())
@@ -237,11 +263,16 @@ model UserQuestion {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  question Question @relation(fields: [questionId], references: [id])
+  // foreign keys
   questionId String
-
-  user User @relation(fields: [userId], references: [id])
+  question Question? @relation(fields: [questionId], references: [id])
   userId String
+  user User? @relation(fields: [userId], references: [id])
+  userBlockId String
+  userBlock UserBlock? @relation(fields: [userBlockId], references: [id])
+
+  // references
+  userQuestionAnswers UserQuestionAnswer[]
 }
 model UserQuestionAnswer {
   id String @id @default(uuid())
@@ -249,12 +280,11 @@ model UserQuestionAnswer {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  question Question @relation(fields: [questionId], references: [id])
-  questionId String
-
-  questionOption QuestionOption? @relation(fields: [questionOptionId], references: [id])
+  // foreign keys
   questionOptionId String @unique
-
-  user User @relation(fields: [userId], references: [id])
+  questionOption QuestionOption? @relation(fields: [questionOptionId], references: [id])
   userId String
+  user User? @relation(fields: [userId], references: [id])
+  userQuestionId String
+  userQuestion UserQuestion @relation(fields: [userQuestionId], references: [id])
 }

@@ -78,52 +78,56 @@ const update = async (req, res) => {
     handlers.validateRequest(req, 'blockId', 'title', 'position', 'questionOptions');
     const id = req.params.id
     const questionOptions = req.body.questionOptions;
-    await prisma.question.update({
-      where: { id },
-      data: {
-        blockId: req.body.blockId,
-        title: req.body.title,
-        position: req.body.position,
-      }
-    })
-
-    // options create update
-    const optionsExist = await prisma.questionOption.findMany({
-      where: { questionId: id }
-    });
-    const optionsCreate = questionOptions.filter(option => !optionsExist.find(optionExist => option.id === optionExist.id));
-    const optionsUpdate = questionOptions.filter(option => optionsExist.find(optionExist => option.id === optionExist.id));
-    await prisma.questionOption.createMany({
-      data: optionsCreate.map(d => ({
-        questionId: id,
-        title: d.title,
-        correct: d.correct
-      }))
-    })
-    for (const optionUpdate of optionsUpdate) {
-      await prisma.questionOption.update({
-        where: { id: optionUpdate.id },
+    const question = await prisma.$transaction(async (tx) => {
+      await tx.question.update({
+        where: { id },
         data: {
-          questionId: id,
-          title: optionUpdate.title,
-          correct: optionUpdate.correct
+          blockId: req.body.blockId,
+          title: req.body.title,
+          position: req.body.position,
         }
       })
-    }
+      const optionsExist = await tx.questionOption.findMany({
+        where: { questionId: id }
+      });
 
-    // options delete
-    const optionsDelete = optionsExist.filter(optionExist => !questionOptions.find(option => option.id === optionExist.id));
-    for (const optionDelete of optionsDelete) {
-      await prisma.questionOption.delete({
-        where: { id: optionDelete.id }
+      // options create
+      const optionsCreate = questionOptions.filter(option => !optionsExist.find(optionExist => option.id === optionExist.id));
+      await tx.questionOption.createMany({
+        data: optionsCreate.map(d => ({
+          questionId: id,
+          title: d.title,
+          correct: d.correct
+        }))
       })
-    }
 
-    const question = await prisma.question.findUnique({
-      where: { id },
-      include: {
-        questionOptions: true
+      // options update
+      const optionsUpdate = questionOptions.filter(option => optionsExist.find(optionExist => option.id === optionExist.id));
+      for (const optionUpdate of optionsUpdate) {
+        await tx.questionOption.update({
+          where: { id: optionUpdate.id },
+          data: {
+            questionId: id,
+            title: optionUpdate.title,
+            correct: optionUpdate.correct
+          }
+        })
       }
+
+      // options delete
+      const optionsDelete = optionsExist.filter(optionExist => !questionOptions.find(option => option.id === optionExist.id));
+      for (const optionDelete of optionsDelete) {
+        await tx.questionOption.delete({
+          where: { id: optionDelete.id }
+        })
+      }
+
+      return tx.question.findUnique({
+        where: { id },
+        include: {
+          questionOptions: true
+        }
+      });
     });
     res.status(200).send({
       success: true,
@@ -139,14 +143,16 @@ const del = async (req, res) => {
   try {
     handlers.validateRequest(req, 'ids');
     const ids = req.body.ids;
-    for (const id of ids) {
-      await prisma.questionOption.deleteMany({
-        where: { questionId: id }
-      })
-      await prisma.question.delete({
-        where: { id }
-      })
-    }
+    await prisma.$transaction(async (tx) => {
+      for (const id of ids) {
+        await tx.questionOption.deleteMany({
+          where: { questionId: id }
+        })
+        await tx.question.delete({
+          where: { id }
+        })
+      }
+    })
     res.status(200).send({
       success: true,
       changes: ids.length
@@ -160,48 +166,49 @@ const del = async (req, res) => {
 
 const userList = async (req, res) => {
   try {
-    handlers.validateRequest(req, 'blockId');
-    const blockId = req.body.blockId;
-    const userId = req.user.id;
-    const questions = (await prisma.question.findMany({
-      where: { blockId },
-      include: {
-        questionOptions: {
-          select: {
-            id: true,
-            title: true,
+    handlers.validateRequest(req, 'userBlockId');
+    const userBlockId = req.body.userBlockId;
+    const data = await prisma.$transaction(async (tx) => {
+      const userQuestions = await prisma.userQuestion.findMany({
+        where: { userBlockId },
+        include: {
+          question: {
+            include: {
+              questionOptions: {
+                select: {
+                  id: true,
+                  title: true,
+                },
+              },
+              _count: {
+                select: {
+                  questionOptions: {
+                    where: {
+                      correct: true
+                    }
+                  }
+                },
+              },
+            },
+            orderBy: { position: 'asc' }
           },
-        },
-        userQuestions: {
-          select: {
-            complete: true,
-            error: true,
-            comment: true
-          },
-          where: { userId }
-        },
-        userQuestionAnswers: {
-          select: {
-            questionOptionId: true,
-            commentText: true
-          },
-          where: { userId }
+          userQuestionAnswers: true
         }
-      },
-      orderBy: {
-        position: 'asc'
+      })
+      for (const userQuestion of userQuestions) {
+        const _count = await tx.questionOption.count({
+          where: {
+            questionId: userQuestion.question.id,
+            correct: true
+          }
+        })
+        userQuestion.question._type = _count === 1 ? 'radio' : 'checkbox';
       }
-    })).map(item => {
-      const { userQuestions, userQuestionAnswers, ...userQuestion } = item;
-      userQuestion.complete = userQuestions?.[0]?.complete;
-      userQuestion.error = userQuestions?.[0]?.error;
-      userQuestion.comment = userQuestions?.[0]?.comment;
-      userQuestion.questionAnswers = userQuestionAnswers;
-      return userQuestion;
-    })
+      return userQuestions;
+    });
     res.status(200).send({
       success: true,
-      data: questions
+      data
     });
   } catch (err) {
     await handlers.errorHandler(res, err);
@@ -212,48 +219,45 @@ const userList = async (req, res) => {
 const userItem = async (req, res) => {
   try {
     const id = req.params.id;
-    const userId = req.user.id;
-    const question = await prisma.question.findUnique({
-      where: { id },
-      include: {
-        questionOptions: {
-          select: {
-            id: true,
-            title: true,
-            correct: true
+    const data = await prisma.$transaction(async (tx) => {
+      const userQuestion = await prisma.userQuestion.findUnique({
+        where: { id },
+        include: {
+          question: {
+            include: {
+              questionOptions: {
+                select: {
+                  id: true,
+                  title: true,
+                },
+              },
+              _count: {
+                select: {
+                  questionOptions: {
+                    where: {
+                      correct: true
+                    }
+                  }
+                },
+              },
+            },
+            orderBy: { position: 'asc' }
           },
-        },
-        userQuestions: {
-          select: {
-            complete: true,
-            error: true,
-            comment: true
-          },
-          where: { userId }
-        },
-        userQuestionAnswers: {
-          select: {
-            questionOptionId: true,
-            commentText: true
-          },
-          where: { userId }
+          userQuestionAnswers: true
         }
-      },
-    });
-    const { questionOptions, userQuestions, userQuestionAnswers, ...userQuestion } = question;
-    const isRadio = questionOptions.filter(d => d.correct).length === 1;
-    userQuestion.questionOptions = questionOptions.map(d => ({
-      id: d.id,
-      title: d.title
-    }));
-    userQuestion.complete = userQuestions?.[0]?.complete;
-    userQuestion.error = userQuestions?.[0]?.error;
-    userQuestion.comment = userQuestions?.[0]?.comment;
-    userQuestion.questionAnswers = userQuestionAnswers;
-    userQuestion.type = isRadio ? 'radio' : 'checkbox';
+      })
+      const _count = await tx.questionOption.count({
+        where: {
+          questionId: userQuestion.question.id,
+          correct: true
+        }
+      })
+      userQuestion.question._type = _count === 1 ? 'radio' : 'checkbox';
+      return userQuestion;
+    })
     res.status(200).send({
       success: true,
-      data: userQuestion
+      data
     });
   } catch (err) {
     await handlers.errorHandler(res, err);
@@ -263,35 +267,33 @@ const userItem = async (req, res) => {
 }
 const userSave = async (req, res) => {
   try {
-    handlers.validateRequest(req, 'questionId');
-    handlers.validateRequest(req, 'questionAnswers');
-
-    const questionId = req.body.questionId;
-    const questionAnswers = req.body.questionAnswers;
+    handlers.validateRequest(req, 'id');
+    handlers.validateRequest(req, 'userQuestionAnswers');
+    const id = req.body.id;
+    const userQuestionAnswers = req.body.userQuestionAnswers;
     const userId = req.user.id;
-
     await prisma.$transaction(async (tx) => {
-      const answersExist = await tx.userQuestionAnswer.findMany({
-        where: { questionId }
+      const userQuestionAnswersExist = await tx.userQuestionAnswer.findMany({
+        where: { userQuestionId: id }
       })
-      const answersCreate = questionAnswers.filter(answer => !answersExist.find(answerExist => answer === answerExist.questionOptionId));
-      const answersDelete = answersExist.filter(answerExist => !questionAnswers.find(answer => answer === answerExist.questionOptionId));
       // create
+      const answersCreate = userQuestionAnswers.filter(answer => !userQuestionAnswersExist.find(answerExist => answer === answerExist.questionOptionId));
       await tx.userQuestionAnswer.createMany({
         data: answersCreate.map(answerCreate => ({
           questionOptionId: answerCreate,
-          questionId,
-          userId
+          userId,
+          userQuestionId: id,
+          commentText: null
         }))
       })
       // delete
+      const answersDelete = userQuestionAnswersExist.filter(answerExist => !userQuestionAnswers.find(answer => answer === answerExist.questionOptionId));
       for (const answerDelete of answersDelete) {
         await tx.userQuestionAnswer.delete({
           where: { id: answerDelete.id }
         })
       }
     })
-
     res.status(200).send({
       success: true
     });
@@ -303,58 +305,35 @@ const userSave = async (req, res) => {
 }
 const userCheck = async (req, res) => {
   try {
-    handlers.validateRequest(req, 'blockId');
-
-    const blockId = req.body.blockId;
-    const userId = req.user.id;
-
+    handlers.validateRequest(req, 'userBlockId');
+    const userBlockId = req.body.userBlockId;
     await prisma.$transaction(async (tx) => {
-      let errorQuestions = false;
-      const questions = await tx.question.findMany({
-        where: { blockId },
+      const userQuestions = await tx.userQuestion.findMany({
+        where: { userBlockId },
         include: {
-          questionOptions: {
-            select: {
-              id: true,
-              title: true,
-              correct: true,
-            },
+          question: {
+            include: { questionOptions: true },
+            orderBy: { position: 'asc' }
           },
-          userQuestions: {
-            select: {
-              id: true,
-            },
-            where: { userId }
-          },
-          userQuestionAnswers: {
-            where: { userId }
-          }
-        },
-        orderBy: {
-          position: 'asc'
+          userQuestionAnswers: true
         }
       })
-      for (const question of questions) {
-        const userQuestionId = question.userQuestions?.[0]?.id;
-        const correct = question.questionOptions.filter(d => d.correct).map(d => d.id);
-        const answers = question.userQuestionAnswers.map(d => d.questionOptionId);
-        const error = correct.sort().toString() !== answers.sort().toString();
+      let errorQuestions = false;
+      for (const userQuestion of userQuestions) {
+        const correctIds = userQuestion.question.questionOptions.filter(d => d.correct).map(d => d.id);
+        const answerIds = userQuestion.userQuestionAnswers.map(d => d.questionOptionId);
+        const error = correctIds.sort().toString() !== answerIds.sort().toString();
         if (error) errorQuestions = true;
         await tx.userQuestion.update({
-          where: { id: userQuestionId },
+          where: { id: userQuestion.id },
           data: { complete: true, error }
         })
       }
-
-      const userBlock = await tx.userBlock.findFirst({
-        where: { blockId }
-      })
       await tx.userBlock.update({
-        where: { id: userBlock.id },
+        where: { id: userBlockId },
         data: { completeQuestions: true, errorQuestions }
       })
     })
-
     res.status(200).send({
       success: true
     });
@@ -367,28 +346,43 @@ const userCheck = async (req, res) => {
 
 const adminList = async (req, res) => {
   try {
-    const userQuestions = await prisma.userQuestion.findMany({
-      include: {
-        user: {
-          select: {
-            username: true,
-            firstname: true,
-            lastname: true
-          }
+    const data = await prisma.$transaction(async (tx) => {
+      const userQuestions = await tx.userQuestion.findMany({
+        include: {
+          user: {
+            select: {
+              username: true,
+              firstname: true,
+              lastname: true
+            }
+          },
+          question: {
+            include: {
+              block: true,
+              questionOptions: true,
+            },
+          },
+          userQuestionAnswers: true,
         },
-        question: {
-          include: {
-            block: true,
+        orderBy: [
+          { userBlockId: 'asc' },
+          { question: { position: 'asc' } }
+        ]
+      });
+      for (const userQuestion of userQuestions) {
+        const _count = await tx.questionOption.count({
+          where: {
+            questionId: userQuestion.question.id,
+            correct: true
           }
-        },
-      },
-      orderBy: {
-        updatedAt: 'desc'
+        })
+        userQuestion.question._type = _count === 1 ? 'radio' : 'checkbox';
       }
+      return userQuestions;
     });
     res.status(200).send({
       success: true,
-      data: userQuestions
+      data
     });
   } catch (err) {
     await handlers.errorHandler(res, err);
@@ -399,26 +393,38 @@ const adminList = async (req, res) => {
 const adminItem = async (req, res) => {
   try {
     const id = req.params.id;
-    const userQuestion = await prisma.userQuestion.findUnique({
-      where: { id },
-      include: {
-        user: {
-          select: {
-            username: true,
-            firstname: true,
-            lastname: true
-          }
+    const data = await prisma.$transaction(async (tx) => {
+      const userQuestion = await tx.userQuestion.findUniqueOrThrow({
+        where: { id },
+        include: {
+          user: {
+            select: {
+              username: true,
+              firstname: true,
+              lastname: true
+            }
+          },
+          question: {
+            include: {
+              block: true,
+              questionOptions: true,
+            },
+          },
+          userQuestionAnswers: true,
         },
-        question: {
-          include: {
-            block: true,
-          }
-        },
-      }
+      });
+      const _count = await tx.questionOption.count({
+        where: {
+          questionId: userQuestion.question.id,
+          correct: true
+        }
+      })
+      userQuestion.question._type = _count === 1 ? 'radio' : 'checkbox';
+      return userQuestion;
     });
     res.status(200).send({
       success: true,
-      data: userQuestion
+      data
     });
   } catch (err) {
     await handlers.errorHandler(res, err);
