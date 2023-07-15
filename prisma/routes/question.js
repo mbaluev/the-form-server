@@ -180,20 +180,11 @@ const userList = async (req, res) => {
                   title: true,
                 },
               },
-              _count: {
-                select: {
-                  questionOptions: {
-                    where: {
-                      correct: true
-                    }
-                  }
-                },
-              },
             },
-            orderBy: { position: 'asc' }
           },
           userQuestionAnswers: true
-        }
+        },
+        orderBy: { question: { position: "asc" } }
       })
       for (const userQuestion of userQuestions) {
         const _count = await tx.questionOption.count({
@@ -231,20 +222,10 @@ const userItem = async (req, res) => {
                   title: true,
                 },
               },
-              _count: {
-                select: {
-                  questionOptions: {
-                    where: {
-                      correct: true
-                    }
-                  }
-                },
-              },
             },
-            orderBy: { position: 'asc' }
           },
           userQuestionAnswers: true
-        }
+        },
       })
       const _count = await tx.questionOption.count({
         where: {
@@ -267,27 +248,27 @@ const userItem = async (req, res) => {
 }
 const userSave = async (req, res) => {
   try {
-    handlers.validateRequest(req, 'id');
+    handlers.validateRequest(req, 'userQuestionId');
     handlers.validateRequest(req, 'userQuestionAnswers');
-    const id = req.body.id;
+    const userQuestionId = req.body.userQuestionId;
     const userQuestionAnswers = req.body.userQuestionAnswers;
     const userId = req.user.id;
     await prisma.$transaction(async (tx) => {
-      const userQuestionAnswersExist = await tx.userQuestionAnswer.findMany({
-        where: { userQuestionId: id }
+      const answersExist = await tx.userQuestionAnswer.findMany({
+        where: { userQuestionId }
       })
+      const answersCreate = userQuestionAnswers.filter(answer => !answersExist.find(answerExist => answer.questionOptionId === answerExist.questionOptionId));
+      const answersDelete = answersExist.filter(answerExist => !userQuestionAnswers.find(answer => answer.questionOptionId === answerExist.questionOptionId));
       // create
-      const answersCreate = userQuestionAnswers.filter(answer => !userQuestionAnswersExist.find(answerExist => answer === answerExist.questionOptionId));
       await tx.userQuestionAnswer.createMany({
         data: answersCreate.map(answerCreate => ({
-          questionOptionId: answerCreate,
+          questionOptionId: answerCreate.questionOptionId,
           userId,
-          userQuestionId: id,
+          userQuestionId,
           commentText: null
         }))
       })
       // delete
-      const answersDelete = userQuestionAnswersExist.filter(answerExist => !userQuestionAnswers.find(answer => answer === answerExist.questionOptionId));
       for (const answerDelete of answersDelete) {
         await tx.userQuestionAnswer.delete({
           where: { id: answerDelete.id }
@@ -313,10 +294,10 @@ const userCheck = async (req, res) => {
         include: {
           question: {
             include: { questionOptions: true },
-            orderBy: { position: 'asc' }
           },
           userQuestionAnswers: true
-        }
+        },
+        orderBy: { question: { position: "asc" } }
       })
       let errorQuestions = false;
       for (const userQuestion of userQuestions) {
