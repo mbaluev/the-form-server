@@ -15,6 +15,7 @@ router.post("/user/sent", verifyUser, routeTask.userSent);
 
 router.post("/admin/list", verifyAdmin, routeTask.adminList);
 router.get("/admin/item/:id", verifyAdmin, routeTask.adminItem);
+router.post("/admin/sent", verifyAdmin, routeTask.adminSent);
 router.post("/admin/complete/:id", verifyAdmin, routeTask.adminComplete);
 
 module.exports = router

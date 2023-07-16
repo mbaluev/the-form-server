@@ -186,7 +186,8 @@ const userList = async (req, res) => {
           },
           orderBy: { updatedAt: 'desc' }
         }
-      }
+      },
+      orderBy: { updatedAt: 'desc' }
     })
     res.status(200).send({
       success: true,
@@ -241,26 +242,27 @@ const userSent = async (req, res) => {
   try {
     handlers.validateRequest(
       req,
-      'id', 'sent',
-      'userTaskDocument.document.documentTypeId',
-      'userTaskDocument.document.name',
-      'userTaskDocument.document.description'
+      'userTaskId',
+      'document.documentTypeId',
+      'document.name',
+      'document.description'
     );
     const userId = req.user.id;
+    const userTaskId = req.body.userTaskId;
     const userTask = await prisma.$transaction(async (tx) => {
       const document = await tx.document.create({
         data: {
-          documentTypeId: req.body.userTaskDocument.document.documentTypeId,
-          name: req.userTaskDocument.body.document.name,
-          description: req.userTaskDocument.body.document.description,
-          fileId: req.body.userTaskDocument.document.fileId,
-          url: req.body.userTaskDocument.document.url,
+          documentTypeId: req.body.document.documentTypeId,
+          name: req.body.document.name,
+          description: req.body.document.description,
+          fileId: req.body.document.fileId,
+          url: req.body.document.url,
           userId,
         }
       })
       await tx.userTaskDocument.create({
         data: {
-          userTaskId: req.body.id,
+          userTaskId,
           documentId: document.id,
           userId,
         },
@@ -274,8 +276,8 @@ const userSent = async (req, res) => {
         }
       })
       return tx.userTask.update({
-        where: { id: req.body.id },
-        data: { sent: req.body.sent },
+        where: { id: userTaskId },
+        data: { sent: true },
         include: {
           task: {
             include: {
@@ -324,6 +326,7 @@ const adminList = async (req, res) => {
         },
         task: {
           include: {
+            block: true,
             document: {
               include: {
                 documentType: true,
@@ -371,6 +374,7 @@ const adminItem = async (req, res) => {
         },
         task: {
           include: {
+            block: true,
             document: {
               include: {
                 documentType: true,
@@ -390,8 +394,81 @@ const adminItem = async (req, res) => {
           },
           orderBy: { updatedAt: 'desc' }
         }
-      },
-      orderBy: { updatedAt: 'desc' }
+      }
+    })
+    res.status(200).send({
+      success: true,
+      data: userTask
+    });
+  } catch (err) {
+    await handlers.errorHandler(res, err);
+  } finally {
+    await prisma.$disconnect()
+  }
+}
+const adminSent = async (req, res) => {
+  try {
+    handlers.validateRequest(
+      req,
+      'userTaskId',
+      'document.documentTypeId',
+      'document.name',
+      'document.description'
+    );
+    const userId = req.user.id;
+    const userTaskId = req.body.userTaskId;
+    const userTask = await prisma.$transaction(async (tx) => {
+      const document = await tx.document.create({
+        data: {
+          documentTypeId: req.body.document.documentTypeId,
+          name: req.body.document.name,
+          description: req.body.document.description,
+          fileId: req.body.document.fileId,
+          url: req.body.document.url,
+          userId,
+        }
+      })
+      await tx.userTaskDocument.create({
+        data: {
+          userTaskId,
+          documentId: document.id,
+          userId,
+        },
+        include: {
+          document: {
+            include: {
+              documentType: true,
+              file: true,
+            }
+          }
+        }
+      })
+      return tx.userTask.update({
+        where: { id: userTaskId },
+        data: { sent: false },
+        include: {
+          task: {
+            include: {
+              document: {
+                include: {
+                  documentType: true,
+                  file: true
+                }
+              },
+            }
+          },
+          userTaskDocuments: {
+            include: {
+              document: {
+                include: {
+                  documentType: true,
+                  file: true
+                }
+              }
+            },
+          }
+        }
+      })
     })
     res.status(200).send({
       success: true,
@@ -431,5 +508,6 @@ module.exports = {
 
   adminList,
   adminItem,
+  adminSent,
   adminComplete
 }
