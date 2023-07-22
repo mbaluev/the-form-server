@@ -346,8 +346,7 @@ const adminList = async (req, res) => {
           userQuestionAnswers: true,
         },
         orderBy: [
-          { userBlockId: 'asc' },
-          { question: { position: 'asc' } }
+          { updatedAt: 'desc' }
         ]
       });
       for (const userQuestion of userQuestions) {
@@ -392,6 +391,7 @@ const adminItem = async (req, res) => {
             },
           },
           userQuestionAnswers: true,
+          userBlock: true
         },
       });
       const _count = await tx.questionOption.count({

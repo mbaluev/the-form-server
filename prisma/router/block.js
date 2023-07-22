@@ -11,4 +11,7 @@ router.delete("/delete", verifyAdmin, routeBlock.del);
 
 router.post("/user/item/:id", verifyStudent, routeBlock.userItem);
 
+router.post("/admin/list", verifyAdmin, routeBlock.adminList);
+router.post("/admin/item/:id", verifyStudent, routeBlock.adminItem);
+
 module.exports = router

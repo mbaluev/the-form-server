@@ -251,15 +251,20 @@ const checkBlocksComplete = async (req, res, next) => {
       }, true);
 
       const complete = Boolean(completeMaterials && completeTasks && completeQuestions);
-      await prisma.userBlock.update({
-        where: { id: userBlock.id },
-        data: {
-          complete,
-          completeMaterials,
-          completeTasks,
-          completeQuestions
-        }
-      })
+      if (complete !== userBlock.complete ||
+          completeMaterials !== userBlock.completeMaterials ||
+          completeTasks !== userBlock.completeTasks ||
+          completeQuestions !== userBlock.completeQuestions) {
+        await prisma.userBlock.update({
+          where: { id: userBlock.id },
+          data: {
+            complete,
+            completeMaterials,
+            completeTasks,
+            completeQuestions
+          }
+        })
+      }
     }
     next();
   } catch (err) {
@@ -355,7 +360,11 @@ const nextBlockEnable = async (req, res, next) => {
     for (const userBlock of userModule.userBlocks) {
       if (userBlock.complete) {
         const nextUserBlock = await prisma.userBlock.findFirst({
-          where: { userId, block: { is: { position: { gt: userBlock.block.position } } } },
+          where: {
+            userId,
+            userModuleId: userModule.id,
+            block: { is: { position: { gt: userBlock.block.position } } }
+          },
           orderBy: { block: { position: 'asc' } }
         })
         if (nextUserBlock) {

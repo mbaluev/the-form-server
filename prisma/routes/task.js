@@ -250,6 +250,7 @@ const userSent = async (req, res) => {
     const userId = req.user.id;
     const userTaskId = req.body.userTaskId;
     const userTask = await prisma.$transaction(async (tx) => {
+      // create document
       const document = await tx.document.create({
         data: {
           documentTypeId: req.body.document.documentTypeId,
@@ -275,7 +276,9 @@ const userSent = async (req, res) => {
           }
         }
       })
-      return tx.userTask.update({
+
+      // update userTask
+      const userTask = await tx.userTask.update({
         where: { id: userTaskId },
         data: { sent: true },
         include: {
@@ -301,6 +304,26 @@ const userSent = async (req, res) => {
           }
         }
       })
+
+      // update userBlock
+      const userBlock = await tx.userBlock.findUnique({
+        where: { id: userTask?.userBlockId }
+      })
+      const userTasks = await tx.userTask.findMany({
+        where: { userBlockId: userBlock?.id }
+      })
+      let sentTasksUser = false;
+      let sentTasksAdmin = false;
+      userTasks.forEach((item) => {
+        if (item.sent === true) sentTasksUser = true;
+        if (item.sent === false) sentTasksAdmin = true;
+      })
+      await tx.userBlock.update({
+        where: { id: userBlock?.id },
+        data: { sentTasksUser, sentTasksAdmin }
+      })
+
+      return userTask;
     })
     res.status(200).send({
       success: true,
@@ -418,6 +441,7 @@ const adminSent = async (req, res) => {
     const userId = req.user.id;
     const userTaskId = req.body.userTaskId;
     const userTask = await prisma.$transaction(async (tx) => {
+      // create document
       const document = await tx.document.create({
         data: {
           documentTypeId: req.body.document.documentTypeId,
@@ -443,7 +467,9 @@ const adminSent = async (req, res) => {
           }
         }
       })
-      return tx.userTask.update({
+
+      // update userTask
+      const userTask = await tx.userTask.update({
         where: { id: userTaskId },
         data: { sent: false },
         include: {
@@ -469,6 +495,26 @@ const adminSent = async (req, res) => {
           }
         }
       })
+
+      // update userBlock
+      const userBlock = await tx.userBlock.findUnique({
+        where: { id: userTask?.userBlockId }
+      })
+      const userTasks = await tx.userTask.findMany({
+        where: { userBlockId: userBlock?.id }
+      })
+      let sentTasksUser = false;
+      let sentTasksAdmin = false;
+      userTasks.forEach((item) => {
+        if (item.sent === true) sentTasksUser = true;
+        if (item.sent === false) sentTasksAdmin = true;
+      })
+      await tx.userBlock.update({
+        where: { id: userBlock?.id },
+        data: { sentTasksAdmin, sentTasksUser }
+      })
+
+      return userTask;
     })
     res.status(200).send({
       success: true,

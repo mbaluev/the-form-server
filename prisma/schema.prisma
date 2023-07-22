@@ -194,6 +194,8 @@ model UserBlock {
   completeTasks Boolean @default(false)
   errorQuestions Boolean @default(false)
   commentQuestions Boolean @default(false)
+  sentTasksAdmin Boolean?
+  sentTasksUser Boolean?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
