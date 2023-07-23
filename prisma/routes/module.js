@@ -179,6 +179,74 @@ const userItem = async (req, res) => {
   }
 }
 
+const adminList = async (req, res) => {
+  try {
+    const userId = req.body.userId;
+    const userModules = await prisma.userModule.findMany({
+      where: { userId },
+      include: {
+        module: true,
+        userBlocks: {
+          include: { block: true },
+          orderBy: { block: { position: "asc" } }
+        },
+      },
+      orderBy: { module: { position: "asc" } }
+    })
+    res.status(200).send({
+      success: true,
+      data: userModules
+    });
+  } catch (err) {
+    await handlers.errorHandler(res, err);
+  } finally {
+    await prisma.$disconnect()
+  }
+}
+const adminItem = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const userBlockId = req.body.userBlockId;
+    if (userBlockId) {
+      const userModule = await prisma.userModule.findFirst({
+        where: { userBlocks: { some: { id: userBlockId } } },
+        include: {
+          module: true,
+          userBlocks: {
+            include: { block: true },
+            orderBy: { block: { position: "asc" } }
+          },
+        },
+        orderBy: { module: { position: "asc" } }
+      })
+      res.status(200).send({
+        success: true,
+        data: userModule
+      });
+    } else {
+      const userModule = await prisma.userModule.findFirst({
+        where: { id },
+        include: {
+          module: true,
+          userBlocks: {
+            include: { block: true },
+            orderBy: { block: { position: "asc" } }
+          },
+        },
+        orderBy: { module: { position: "asc" } }
+      })
+      res.status(200).send({
+        success: true,
+        data: userModule
+      });
+    }
+  } catch (err) {
+    await handlers.errorHandler(res, err);
+  } finally {
+    await prisma.$disconnect()
+  }
+}
+
 module.exports = {
   list,
   item,
@@ -188,4 +256,7 @@ module.exports = {
 
   userList,
   userItem,
+
+  adminList,
+  adminItem
 }

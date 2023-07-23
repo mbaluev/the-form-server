@@ -13,4 +13,7 @@ router.post("/user/list", verifyStudent, routeMaterial.userList);
 router.get("/user/item/:id", verifyStudent, routeMaterial.userItem);
 router.post("/user/update/:id", verifyStudent, routeMaterial.userUpdate);
 
+router.post("/admin/list", verifyAdmin, routeMaterial.adminList);
+router.get("/admin/item/:id", verifyAdmin, routeMaterial.adminItem);
+
 module.exports = router

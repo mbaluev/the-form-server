@@ -274,6 +274,64 @@ const userUpdate = async (req, res) => {
   }
 }
 
+const adminList = async (req, res) => {
+  try {
+    handlers.validateRequest(req, 'userBlockId');
+    const userBlockId = req.body.userBlockId;
+    const userMaterials = await prisma.userMaterial.findMany({
+      where: { userBlockId },
+      include: {
+        material: {
+          include: {
+            document: {
+              include: {
+                documentType: true,
+                file: true,
+              }
+            },
+          }
+        },
+      }
+    })
+    res.status(200).send({
+      success: true,
+      data: userMaterials
+    });
+  } catch (err) {
+    await handlers.errorHandler(res, err);
+  } finally {
+    await prisma.$disconnect()
+  }
+}
+const adminItem = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const userMaterial = await prisma.userMaterial.findUnique({
+      where: { id },
+      include: {
+        material: {
+          include: {
+            document: {
+              include: {
+                documentType: true,
+                file: true,
+              }
+            },
+          }
+        },
+      }
+    })
+    res.status(200).send({
+      success: true,
+      data: userMaterial
+    });
+  } catch (err) {
+    await handlers.errorHandler(res, err);
+  } finally {
+    await prisma.$disconnect()
+  }
+}
+
 module.exports = {
   list,
   item,
@@ -283,5 +341,8 @@ module.exports = {
 
   userList,
   userItem,
-  userUpdate
+  userUpdate,
+
+  adminList,
+  adminItem
 }

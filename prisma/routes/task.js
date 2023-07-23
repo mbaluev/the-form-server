@@ -338,7 +338,10 @@ const userSent = async (req, res) => {
 
 const adminList = async (req, res) => {
   try {
+    handlers.validateRequest(req, 'userBlockId');
+    const userBlockId = req.body.userBlockId;
     const userTasks = await prisma.userTask.findMany({
+      where: { userBlockId },
       include: {
         user: {
           select: {

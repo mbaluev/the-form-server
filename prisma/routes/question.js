@@ -327,8 +327,11 @@ const userCheck = async (req, res) => {
 
 const adminList = async (req, res) => {
   try {
+    handlers.validateRequest(req, 'userBlockId');
+    const userBlockId = req.body.userBlockId;
     const data = await prisma.$transaction(async (tx) => {
       const userQuestions = await tx.userQuestion.findMany({
+        where: { userBlockId },
         include: {
           user: {
             select: {
