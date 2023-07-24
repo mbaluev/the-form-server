@@ -312,11 +312,11 @@ const userSent = async (req, res) => {
       const userTasks = await tx.userTask.findMany({
         where: { userBlockId: userBlock?.id }
       })
-      let sentTasksUser = false;
-      let sentTasksAdmin = false;
+      let sentTasksUser = null;
+      let sentTasksAdmin = null;
       userTasks.forEach((item) => {
-        if (item.sent === true) sentTasksUser = true;
-        if (item.sent === false) sentTasksAdmin = true;
+        if (!item.complete && item.sent === true) sentTasksUser = true;
+        if (!item.complete && item.sent === false) sentTasksAdmin = true;
       })
       await tx.userBlock.update({
         where: { id: userBlock?.id },
@@ -506,11 +506,11 @@ const adminSent = async (req, res) => {
       const userTasks = await tx.userTask.findMany({
         where: { userBlockId: userBlock?.id }
       })
-      let sentTasksUser = false;
-      let sentTasksAdmin = false;
+      let sentTasksUser = null;
+      let sentTasksAdmin = null;
       userTasks.forEach((item) => {
-        if (item.sent === true) sentTasksUser = true;
-        if (item.sent === false) sentTasksAdmin = true;
+        if (!item.complete && item.sent === true) sentTasksUser = true;
+        if (!item.complete && item.sent === false) sentTasksAdmin = true;
       })
       await tx.userBlock.update({
         where: { id: userBlock?.id },
@@ -532,9 +532,30 @@ const adminSent = async (req, res) => {
 const adminComplete = async (req, res) => {
   try {
     const id = req.params.id;
-    await prisma.userTask.update({
-      where: { id },
-      data: { complete: true }
+    await prisma.$transaction(async (tx) => {
+      // update userTask
+      const userTask = await tx.userTask.update({
+        where: { id },
+        data: { complete: true }
+      })
+
+      // update userBlock
+      const userBlock = await tx.userBlock.findUnique({
+        where: { id: userTask?.userBlockId }
+      })
+      const userTasks = await tx.userTask.findMany({
+        where: { userBlockId: userBlock?.id }
+      })
+      let sentTasksUser = null;
+      let sentTasksAdmin = null;
+      userTasks.forEach((item) => {
+        if (!item.complete && item.sent === true) sentTasksUser = true;
+        if (!item.complete && item.sent === false) sentTasksAdmin = true;
+      })
+      await tx.userBlock.update({
+        where: { id: userBlock?.id },
+        data: { sentTasksUser, sentTasksAdmin }
+      })
     })
     await adminItem(req, res);
   } catch (err) {
