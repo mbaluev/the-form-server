@@ -338,11 +338,9 @@ module.exports = {
   create,
   update,
   del,
-
   userList,
   userItem,
   userUpdate,
-
   adminList,
   adminItem
 }

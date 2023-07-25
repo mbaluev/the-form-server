@@ -10,4 +10,6 @@ router.patch("/update/:id", verifyAdmin, routeUser.update);
 router.delete("/delete", verifyAdmin, routeUser.del);
 router.get("/me", verifyUser, routeUser.me);
 
+router.post("/admin/list", verifyAdmin, routeUser.adminList);
+
 module.exports = router

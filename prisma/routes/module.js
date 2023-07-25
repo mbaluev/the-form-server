@@ -253,10 +253,8 @@ module.exports = {
   create,
   update,
   del,
-
   userList,
   userItem,
-
   adminList,
   adminItem
 }

@@ -105,6 +105,36 @@ const del = async (req, res) => {
   }
 }
 
+const adminList = async (req, res) => {
+  try {
+    const users = await prisma.user.findMany({
+      include: {
+        userModules: {
+          include: {
+            module: true,
+            userBlocks: {
+              include: {
+                block: true
+              }
+            }
+          },
+        },
+      },
+      orderBy: [
+        { username: 'asc' },
+      ]
+    })
+    res.status(200).send({
+      success: true,
+      data: users
+    });
+  } catch (err) {
+    await handlers.errorHandler(res, err);
+  } finally {
+    await prisma.$disconnect()
+  }
+}
+
 const me = async (req, res) => {
   const { password, salt, refreshToken, ...user } = req.user
   res.send(user);
@@ -389,6 +419,7 @@ module.exports = {
   create,
   update,
   del,
+  adminList,
   me,
   checkTables,
   checkBlocksComplete,

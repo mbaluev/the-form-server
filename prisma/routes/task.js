@@ -249,7 +249,7 @@ const userSent = async (req, res) => {
     );
     const userId = req.user.id;
     const userTaskId = req.body.userTaskId;
-    const userTask = await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx) => {
       // create document
       const document = await tx.document.create({
         data: {
@@ -322,13 +322,8 @@ const userSent = async (req, res) => {
         where: { id: userBlock?.id },
         data: { sentTasksUser, sentTasksAdmin }
       })
-
-      return userTask;
     })
-    res.status(200).send({
-      success: true,
-      data: userTask
-    });
+    await userItem(req, res);
   } catch (err) {
     await handlers.errorHandler(res, err);
   } finally {
@@ -443,7 +438,7 @@ const adminSent = async (req, res) => {
     );
     const userId = req.user.id;
     const userTaskId = req.body.userTaskId;
-    const userTask = await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx) => {
       // create document
       const document = await tx.document.create({
         data: {
@@ -516,13 +511,8 @@ const adminSent = async (req, res) => {
         where: { id: userBlock?.id },
         data: { sentTasksAdmin, sentTasksUser }
       })
-
-      return userTask;
     })
-    res.status(200).send({
-      success: true,
-      data: userTask
-    });
+    await adminItem(req, res);
   } catch (err) {
     await handlers.errorHandler(res, err);
   } finally {
@@ -571,11 +561,9 @@ module.exports = {
   create,
   update,
   del,
-
   userList,
   userItem,
   userSent,
-
   adminList,
   adminItem,
   adminSent,

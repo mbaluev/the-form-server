@@ -10,7 +10,7 @@ router.patch("/update/:id", verifyAdmin, routeQuestion.update);
 router.delete("/delete", verifyAdmin, routeQuestion.del);
 
 router.post("/user/list", verifyStudent, routeQuestion.userList);
-router.get("/user/item/:id", verifyAdmin, routeQuestion.userItem);
+router.get("/user/item/:id", verifyStudent, routeQuestion.userItem);
 router.post("/user/save", verifyStudent, routeQuestion.userSave);
 router.post("/user/check", verifyStudent, routeQuestion.userCheck);
 

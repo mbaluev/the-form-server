@@ -423,12 +423,10 @@ module.exports = {
   create,
   update,
   del,
-
   userList,
   userItem,
   userSave,
   userCheck,
-
   adminList,
   adminItem
 }
