@@ -131,7 +131,9 @@ const userItem = async (req, res) => {
 
 const adminList = async (req, res) => {
   try {
-    const adminBlocks = await prisma.userBlock.findMany({
+    const userModuleId = req.body.userModuleId;
+    const userBlocks = await prisma.userBlock.findMany({
+      where: { userModuleId },
       include: {
         user: true,
         block: {
@@ -146,7 +148,7 @@ const adminList = async (req, res) => {
     })
     res.status(200).send({
       success: true,
-      data: adminBlocks
+      data: userBlocks
     });
   } catch (err) {
     await handlers.errorHandler(res, err);
@@ -157,7 +159,7 @@ const adminList = async (req, res) => {
 const adminItem = async (req, res) => {
   try {
     const id = req.params.id;
-    const adminBlock = await prisma.userBlock.findFirst({
+    const userBlock = await prisma.userBlock.findFirst({
       where: { id },
       include: {
         user: true,
@@ -168,7 +170,7 @@ const adminItem = async (req, res) => {
     })
     res.status(200).send({
       success: true,
-      data: adminBlock
+      data: userBlock
     });
   } catch (err) {
     await handlers.errorHandler(res, err);

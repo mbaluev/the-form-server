@@ -212,6 +212,7 @@ const adminItem = async (req, res) => {
         where: { userBlocks: { some: { id: userBlockId } } },
         include: {
           module: true,
+          user: true,
           userBlocks: {
             include: { block: true },
             orderBy: { block: { position: "asc" } }
@@ -228,6 +229,7 @@ const adminItem = async (req, res) => {
         where: { id },
         include: {
           module: true,
+          user: true,
           userBlocks: {
             include: { block: true },
             orderBy: { block: { position: "asc" } }
