@@ -155,11 +155,11 @@ model User {
   active Boolean @default(false)
   paid Boolean @default(false)
   admin Boolean @default(false)
-  refreshToken String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // references
+  userRefreshTokens UserRefreshToken[]
   userDocuments Document[]
   userModules UserModule[]
   userBlocks UserBlock[]
@@ -168,6 +168,16 @@ model User {
   userTaskDocuments UserTaskDocument[]
   userQuestions UserQuestion[]
   userQuestionAnswers UserQuestionAnswer[]
+}
+model UserRefreshToken {
+  id String @id @default(uuid())
+  token String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // foreign keys
+  userId String
+  user User? @relation(fields: [userId], references: [id])
 }
 model UserModule {
   id String @id @default(uuid())

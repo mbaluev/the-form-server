@@ -23,9 +23,11 @@ const signIn = async (req, res) => {
       admin: user.admin
     });
     const refreshToken = getRefreshToken({ id })
-    await prisma.user.update({
-      where: { id },
-      data: { refreshToken },
+    await prisma.userRefreshToken.create({
+      data: {
+        token: refreshToken,
+        userId: id
+      }
     })
     res.cookie("refreshToken", refreshToken, COOKIE_OPTIONS)
     res.status(200).send({
@@ -70,9 +72,8 @@ const signOut = async (req, res) => {
     await prisma.user.findUniqueOrThrow({
       where: { id }
     })
-    await prisma.user.update({
-      where: { id },
-      data: { refreshToken: null }
+    await prisma.userRefreshToken.deleteMany({
+      where: { userId: id },
     })
     res.clearCookie("refreshToken", COOKIE_OPTIONS);
     res.status(200).send({
@@ -87,13 +88,7 @@ const signOut = async (req, res) => {
 const token = async (req, res) => {
   try {
     const { signedCookies: { refreshToken } } = req
-    if (!refreshToken) handlers.throwError(401, "Unauthorized");
-    const payload = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
-    const id = payload.id;
-    const user = await prisma.user.findUniqueOrThrow({
-      where: { id }
-    });
-    if (user.refreshToken !== refreshToken) handlers.throwError(401, "Unauthorized");
+    const user = await authorize(refreshToken);
     const newToken = getToken({
       id: user.id,
       firstname: user.firstname,
@@ -117,13 +112,7 @@ const token = async (req, res) => {
 const refreshToken = async (req, res) => {
   try {
     const { signedCookies: { refreshToken } } = req
-    if (!refreshToken) handlers.throwError(401, "Unauthorized");
-    const payload = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
-    const id = payload.id;
-    const user = await prisma.user.findUniqueOrThrow({
-      where: { id }
-    });
-    if (user.refreshToken !== refreshToken) handlers.throwError(401, "Unauthorized");
+    const user = await authorize(refreshToken);
     const newToken = getToken({
       id: user.id,
       firstname: user.firstname,
@@ -133,10 +122,12 @@ const refreshToken = async (req, res) => {
       paid: user.paid,
       admin: user.admin
     });
-    const newRefreshToken = getRefreshToken({ id })
-    await prisma.user.update({
-      where: { id },
-      data: { refreshToken: newRefreshToken }
+    const newRefreshToken = getRefreshToken({ id: user.id })
+    await prisma.userRefreshToken.create({
+      data: {
+        token: newRefreshToken,
+        userId: user.id
+      }
     })
     res.cookie("refreshToken", newRefreshToken, COOKIE_OPTIONS)
     res.status(200).send({
@@ -148,6 +139,35 @@ const refreshToken = async (req, res) => {
   } finally {
     await prisma.$disconnect()
   }
+}
+
+const authorize = async (refreshToken) => {
+  if (!refreshToken) handlers.throwError(401, "Unauthorized");
+  const payload = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+  const id = payload.id;
+  return await prisma.$transaction(async (tx) => {
+    const user = await tx.user.findUniqueOrThrow({
+      where: { id }
+    });
+    const userRefreshTokens = await tx.userRefreshToken.findMany({
+      where: { userId: id}
+    })
+    let authorized = false;
+    for (const userRefreshToken of userRefreshTokens) {
+      jwt.verify(userRefreshToken.token, process.env.REFRESH_TOKEN_SECRET, (err) => {
+        if (err) {
+          tx.userRefreshToken.delete({
+            where: { id: userRefreshToken.id }
+          })
+        } else {
+          if (userRefreshToken.token === refreshToken)
+            authorized = true
+        }
+      });
+    }
+    if (!authorized) handlers.throwError(401, "Unauthorized");
+    return user;
+  })
 }
 
 module.exports = {
