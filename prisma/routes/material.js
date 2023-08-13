@@ -216,7 +216,10 @@ const userList = async (req, res) => {
             },
           }
         },
-      }
+      },
+      orderBy: [
+        { material: { document: { name: "asc" } } },
+      ]
     })
     res.status(200).send({
       success: true,
@@ -291,7 +294,10 @@ const adminList = async (req, res) => {
             },
           }
         },
-      }
+      },
+      orderBy: [
+        { material: { document: { name: "asc" } } },
+      ]
     })
     res.status(200).send({
       success: true,

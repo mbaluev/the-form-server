@@ -239,7 +239,7 @@ const checkTables = async (req, res, next) => {
                 userBlockId: userBlock.id,
                 complete: null,
                 error: null,
-                comment: null
+                commentText: null
               }
             })
           }

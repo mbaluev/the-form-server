@@ -145,29 +145,27 @@ const authorize = async (refreshToken) => {
   if (!refreshToken) handlers.throwError(401, "Unauthorized");
   const payload = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
   const id = payload.id;
-  return await prisma.$transaction(async (tx) => {
-    const user = await tx.user.findUniqueOrThrow({
-      where: { id }
-    });
-    const userRefreshTokens = await tx.userRefreshToken.findMany({
-      where: { userId: id}
-    })
-    let authorized = false;
-    for (const userRefreshToken of userRefreshTokens) {
-      jwt.verify(userRefreshToken.token, process.env.REFRESH_TOKEN_SECRET, (err) => {
-        if (err) {
-          tx.userRefreshToken.delete({
-            where: { id: userRefreshToken.id }
-          })
-        } else {
-          if (userRefreshToken.token === refreshToken)
-            authorized = true
-        }
-      });
-    }
-    if (!authorized) handlers.throwError(401, "Unauthorized");
-    return user;
+  const user = await prisma.user.findUniqueOrThrow({
+    where: { id }
+  });
+  const userRefreshTokens = await prisma.userRefreshToken.findMany({
+    where: { userId: id}
   })
+  let authorized = false;
+  for (const userRefreshToken of userRefreshTokens) {
+    jwt.verify(userRefreshToken.token, process.env.REFRESH_TOKEN_SECRET, (err) => {
+      if (err) {
+        prisma.userRefreshToken.delete({
+          where: { id: userRefreshToken.id }
+        })
+      } else {
+        if (userRefreshToken.token === refreshToken)
+          authorized = true
+      }
+    });
+  }
+  if (!authorized) handlers.throwError(401, "Unauthorized");
+  return user;
 }
 
 module.exports = {

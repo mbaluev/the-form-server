@@ -323,7 +323,10 @@ const userSent = async (req, res) => {
         data: { sentTasksUser, sentTasksAdmin }
       })
     })
-    await userItem(req, res);
+    res.status(200).send({
+      success: true,
+      data: true
+    });
   } catch (err) {
     await handlers.errorHandler(res, err);
   } finally {
@@ -512,7 +515,10 @@ const adminSent = async (req, res) => {
         data: { sentTasksAdmin, sentTasksUser }
       })
     })
-    await adminItem(req, res);
+    res.status(200).send({
+      success: true,
+      data: true
+    });
   } catch (err) {
     await handlers.errorHandler(res, err);
   } finally {
@@ -547,7 +553,10 @@ const adminComplete = async (req, res) => {
         data: { sentTasksUser, sentTasksAdmin }
       })
     })
-    await adminItem(req, res);
+    res.status(200).send({
+      success: true,
+      data: true
+    });
   } catch (err) {
     await handlers.errorHandler(res, err);
   } finally {

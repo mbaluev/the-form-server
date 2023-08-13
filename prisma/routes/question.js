@@ -265,7 +265,6 @@ const userSave = async (req, res) => {
           questionOptionId: answerCreate.questionOptionId,
           userId,
           userQuestionId,
-          commentText: null
         }))
       })
       // delete
@@ -348,9 +347,7 @@ const adminList = async (req, res) => {
           },
           userQuestionAnswers: true,
         },
-        orderBy: [
-          { updatedAt: 'desc' }
-        ]
+        orderBy: { question: { position: "asc" } }
       });
       for (const userQuestion of userQuestions) {
         const _count = await tx.questionOption.count({
@@ -416,6 +413,31 @@ const adminItem = async (req, res) => {
     await prisma.$disconnect()
   }
 }
+const adminSave = async (req, res) => {
+  try {
+    handlers.validateRequest(req, 'userBlockId');
+    handlers.validateRequest(req, 'userQuestionId');
+    handlers.validateRequest(req, 'commentText');
+    const userQuestionId = req.body.userQuestionId;
+    const userBlockId = req.body.userBlockId;
+    const commentText = req.body.commentText;
+    await prisma.userQuestion.update({
+      where: { id: userQuestionId },
+      data: { commentText }
+    })
+    await prisma.userBlock.update({
+      where: { id: userBlockId },
+      data: { commentQuestions: true }
+    })
+    res.status(200).send({
+      success: true
+    });
+  } catch (err) {
+    await handlers.errorHandler(res, err);
+  } finally {
+    await prisma.$disconnect()
+  }
+}
 
 module.exports = {
   list,
@@ -428,5 +450,6 @@ module.exports = {
   userSave,
   userCheck,
   adminList,
-  adminItem
+  adminItem,
+  adminSave
 }

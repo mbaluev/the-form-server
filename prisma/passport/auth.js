@@ -42,13 +42,17 @@ exports.verifyUser = [
 
 exports.verifyStudent = [
   passport.authenticate('jwt-student', { session: false }),
+]
+
+exports.verifyAdmin = [
+  passport.authenticate('jwt-admin', { session: false })
+]
+
+exports.verifyTables = [
+  passport.authenticate('jwt-student', { session: false }),
   routeUser.checkTables,
   routeUser.checkBlocksComplete,
   routeUser.checkModulesComplete,
   routeUser.nextModuleEnable,
   routeUser.nextBlockEnable,
-]
-
-exports.verifyAdmin = [
-  passport.authenticate('jwt-admin', { session: false })
 ]
