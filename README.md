@@ -14,3 +14,10 @@
 1. [Install Docker](https://docs.docker.com/get-docker/) on your machine
 2. Build your container: `docker build -t the-form-sever .`
 3. Run your container: `docker run -p 8081:8081 --env-file .env.production the-form-sever`
+
+## Refs
+
+1. https://codevoweb.com/api-node-typescript-prisma-postgresql-project-setup/
+<br>
+[(source code on GitHub)](https://github.com/wpcodevo/node_prisma_postgresql/tree/node_prisma_setup)
+2. ...
