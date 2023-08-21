@@ -4,8 +4,11 @@
 
 # local env files
 .env.local
+.env.development
 .env.development.local
+.env.test
 .env.test.local
+.env.production
 .env.production.local
 
 # misc
@@ -14,5 +17,4 @@
 yarn.lock
 yarn-error.log
 package-lock.json
-db/sqlite/the-form
 files

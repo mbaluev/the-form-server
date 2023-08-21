@@ -2,6 +2,11 @@
 const express = require("express")
 const app = express()
 
+console.log('NODE_ENV', process.env.NODE_ENV);
+console.log('JWT_SECRET', process.env.JWT_SECRET);
+console.log('PG_HOST', process.env.PG_HOST);
+console.log('---');
+
 // .env
 if (process.env.NODE_ENV !== "production") {
   // Load environment variables from .env file in non prod environments
@@ -32,16 +37,6 @@ app.use(cors(corsOptions))
 // prisma
 const store = require('./prisma/utils/session');
 const passport = require("./prisma/passport");
-
-// postgres
-// const init = require('./db/pg/utils/init');
-// init().then(() => console.log('Connected to the pg database'));
-// const store = require('./db/pg/utils/session');
-// const passport = require("./db/pg/passport");
-
-// sqlite
-// const store = require('./db/sqlite/utils/session');
-// const passport = require("./db/sqlite/passport");
 
 // session
 const session = require("express-session");
