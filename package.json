@@ -4,10 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "node src/index.js",
     "start:prisma:init": "npx prisma migrate dev --name init && prisma generate",
     "start:prisma:update": "npx prisma migrate dev --name update && prisma generate",
-    "start:prod": "prisma migrate deploy && npm run start"
+    "start:prod": "prisma migrate deploy && npm run start",
+    "build": "prisma generate"
   },
   "repository": {
     "type": "git",
