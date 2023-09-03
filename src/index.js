@@ -35,8 +35,8 @@ const corsOptions = {
 app.use(cors(corsOptions))
 
 // prisma
-const store = require('./src/utils/session');
-const passport = require("./src/passport");
+const store = require('./utils/session');
+const passport = require("./passport");
 
 // session
 const session = require("express-session");
@@ -58,15 +58,15 @@ app.get("/", (req, res) => {
 })
 
 // old routes
-const routerAuth = require("./src/router/auth");
-const routerUser = require("./src/router/user");
-const routerDocumentType = require("./src/router/documentType");
-const routerFile = require("./src/router/file");
-const routerModule = require("./src/router/module");
-const routerBlock = require("./src/router/block");
-const routerMaterial = require("./src/router/material");
-const routerTask = require("./src/router/task");
-const routerQuestion = require("./src/router/question");
+const routerAuth = require("./router/auth");
+const routerUser = require("./router/user");
+const routerDocumentType = require("./router/documentType");
+const routerFile = require("./router/file");
+const routerModule = require("./router/module");
+const routerBlock = require("./router/block");
+const routerMaterial = require("./router/material");
+const routerTask = require("./router/task");
+const routerQuestion = require("./router/question");
 app.use('/api/auth', routerAuth);
 app.use('/api/user', routerUser);
 app.use('/api/documentType', routerDocumentType);
