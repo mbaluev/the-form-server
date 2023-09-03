@@ -4,10 +4,10 @@
   "description": "",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js",
-    "prisma:init": "npx prisma migrate dev --name init && prisma generate",
-    "prisma:update": "npx prisma migrate dev --name update && prisma generate",
-    "prisma:deploy": "npx prisma migrate deploy && prisma generate"
+    "start": "npx prisma generate && node src/index.js",
+    "init": "npx prisma migrate dev --name init",
+    "update": "npx prisma migrate dev --name update",
+    "deploy": "npx prisma migrate deploy"
   },
   "repository": {
     "type": "git",
