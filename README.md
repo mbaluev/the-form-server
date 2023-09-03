@@ -2,12 +2,12 @@
 
 ## Init and start server
 1. `npx prisma migrate dev --name init`
-2. `prisma generate`
-3. `node index`
+2. `npx prisma generate`
+3. `node src/index`
 
 ## Sync prisma
 1. `npx prisma migrate dev --name update`
-2. `prisma generate`
+2. `npx prisma generate`
 
 ## Using Docker
 

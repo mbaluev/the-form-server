@@ -5,10 +5,9 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "start:prisma:init": "npx prisma migrate dev --name init && prisma generate",
-    "start:prisma:update": "npx prisma migrate dev --name update && prisma generate",
-    "start:prod": "prisma migrate deploy && npm run start",
-    "build": "prisma generate"
+    "prisma:init": "npx prisma migrate dev --name init && prisma generate",
+    "prisma:update": "npx prisma migrate dev --name update && prisma generate",
+    "prisma:deploy": "npx prisma migrate deploy && prisma generate"
   },
   "repository": {
     "type": "git",
