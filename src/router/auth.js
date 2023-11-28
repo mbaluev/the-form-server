@@ -9,4 +9,6 @@ router.post("/refreshToken", routeAuth.refreshToken)
 router.post("/token", routeAuth.token)
 router.get("/signout", verifyUser, routeAuth.signOut);
 
+router.post("/login", verifySignIn, routeAuth.login);
+
 module.exports = router;

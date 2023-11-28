@@ -168,10 +168,17 @@ const authorize = async (refreshToken) => {
   return user;
 }
 
+const login = async (req, res) => {
+  const { password, salt, refreshToken, ...user } = req.user
+  console.log(user);
+  res.send(user);
+}
+
 module.exports = {
   signIn,
   signUp,
   signOut,
   token,
-  refreshToken
+  refreshToken,
+  login
 }
