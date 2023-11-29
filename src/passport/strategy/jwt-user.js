@@ -5,7 +5,7 @@ const prisma = new PrismaClient()
 
 const opts = {}
 opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken()
-opts.secretOrKey = process.env.JWT_SECRET
+opts.secretOrKey = process.env.TOKEN_SECRET
 
 module.exports = new JwtStrategy(opts, function (jwt_payload, done) {
   const id = jwt_payload.id;

@@ -2,7 +2,7 @@ const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 const passport = require('passport');
 
-const localStrategy = require('./strategy/local');
+const signInStrategy = require('./strategy/sign-in');
 const jwtUserStrategy = require('./strategy/jwt-user');
 const jwtAdminStrategy = require('./strategy/jwt-admin');
 const jwtStudentStrategy = require('./strategy/jwt-student');
@@ -16,7 +16,7 @@ passport.deserializeUser((id, done) => {
     .catch(err => done(err, false))
 });
 
-passport.use('local', localStrategy);
+passport.use('sign-in', signInStrategy);
 passport.use('jwt-user', jwtUserStrategy);
 passport.use('jwt-admin', jwtAdminStrategy);
 passport.use('jwt-student', jwtStudentStrategy);

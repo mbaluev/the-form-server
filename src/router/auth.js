@@ -5,8 +5,6 @@ const routeAuth = require("../routes/auth");
 
 router.post("/signin", verifySignIn, routeAuth.signIn);
 router.post("/signup", routeAuth.signUp);
-router.post("/refreshToken", routeAuth.refreshToken)
-router.post("/token", routeAuth.token)
 router.get("/signout", verifyUser, routeAuth.signOut);
 
 module.exports = router;
