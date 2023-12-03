@@ -137,41 +137,47 @@ const userList = async (req, res) => {
 const userItem = async (req, res) => {
   try {
     const id = req.params.id;
-    const userBlockId = req.body.userBlockId;
     const userId = req.user.id;
-    if (userBlockId) {
-      const userModule = await prisma.userModule.findFirst({
-        where: { userId, userBlocks: { some: { id: userBlockId } } },
-        include: {
-          module: true,
-          userBlocks: {
-            include: { block: true },
-            orderBy: { block: { position: "asc" } }
-          },
+    const userModule = await prisma.userModule.findFirst({
+      where: { id, userId },
+      include: {
+        module: true,
+        userBlocks: {
+          include: { block: true },
+          orderBy: { block: { position: "asc" } }
         },
-        orderBy: { module: { position: "asc" } }
-      })
-      res.status(200).send({
-        success: true,
-        data: userModule
-      });
-    } else {
-      const userModule = await prisma.userModule.findFirst({
-        where: { id, userId },
-        include: {
-          module: true,
-          userBlocks: {
-            include: { block: true },
-            orderBy: { block: { position: "asc" } }
-          },
+      },
+      orderBy: { module: { position: "asc" } }
+    })
+    res.status(200).send({
+      success: true,
+      data: userModule
+    });
+  } catch (err) {
+    await handlers.errorHandler(res, err);
+  } finally {
+    await prisma.$disconnect()
+  }
+}
+const userBlockId = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const userId = req.user.id;
+    const userModule = await prisma.userModule.findFirst({
+      where: { userId, userBlocks: { some: { id } } },
+      include: {
+        module: true,
+        userBlocks: {
+          include: { block: true },
+          orderBy: { block: { position: "asc" } }
         },
-        orderBy: { module: { position: "asc" } }
-      })
-      res.status(200).send({
-        success: true,
-        data: userModule
-      });
-    }
+      },
+      orderBy: { module: { position: "asc" } }
+    })
+    res.status(200).send({
+      success: true,
+      data: userModule
+    });
   } catch (err) {
     await handlers.errorHandler(res, err);
   } finally {
@@ -257,6 +263,7 @@ module.exports = {
   del,
   userList,
   userItem,
+  userBlockId,
   adminList,
   adminItem
 }

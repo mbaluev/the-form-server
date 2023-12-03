@@ -1,4 +1,6 @@
-FROM node:20-alpine AS deps
+#FROM node:20-alpine AS deps
+#FROM amd64/node:20-alpine AS deps
+FROM --platform=linux/amd64 node:20-alpine AS deps
 
 WORKDIR /usr/src/app
 
