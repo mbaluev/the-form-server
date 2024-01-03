@@ -4,6 +4,7 @@
   "description": "",
   "main": "src/index.js",
   "scripts": {
+    "create": "npx prisma db push",
     "start": "npx prisma generate && node src/index.js",
     "init": "npx prisma migrate dev --name init",
     "update": "npx prisma migrate dev --name update",
