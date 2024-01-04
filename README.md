@@ -1,21 +1,17 @@
 # The-Form-Server
 
-## Init
-1. `npm run init`
-2. `npm run start`
+## start
+1. start: `npm run start`
+2. docker: `npm run docker:stop && npm run docker:rm && npm run docker:build && npm run docker:run`,
 
-## Sync prisma
-1. `npm run update`
-2. `npm run start`
+## prisma
+1. prisma:push: `npx prisma db push`
+2. prisma:migrate:dev: `npx prisma migrate dev --name migrate`
+3. prisma:migrate:deploy: `npx prisma migrate deploy`
 
-## Deploy
-1. `npm run deploy`
-2. `npm run start`
-
-## Using Docker
-
+## docker
 1. [Install Docker](https://docs.docker.com/get-docker/) on your machine
-2. Build your container: `docker build -t the-form-server .`
-3. Run your container: `docker run --env-file .env.production -dp 127.0.0.1:8081:8081 the-form-server`
-
-You can view your images created with `docker images`
+2. docker:stop: `docker stop the-form-server || true`
+3. docker:rm: `docker rm the-form-server || true`
+4. docker:build: `docker build -t the-form-server .`
+5. docker:run: `docker run --name the-form-server --env-file .env.production -dp 127.0.0.1:8081:8081 the-form-server`

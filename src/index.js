@@ -49,7 +49,7 @@ app.use(passport.session())
 
 // main route
 app.get("/", (req, res) => {
-  res.json({ success: true })
+  res.json({ success: true, v: '1.0' })
 })
 
 // old routes

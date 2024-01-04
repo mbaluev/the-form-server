@@ -4,16 +4,15 @@
   "description": "",
   "main": "src/index.js",
   "scripts": {
-    "create": "npx prisma db push",
     "start": "npx prisma generate && node src/index.js",
-    "init": "npx prisma migrate dev --name init",
-    "update": "npx prisma migrate dev --name update",
-    "deploy": "npx prisma migrate deploy",
-    "docker:clear:images": "docker rmi -f $(docker images -a -q)",
-    "docker:clear:containers": "docker rm -f $(docker ps -qa)",
-    "docker:clear": "npm run docker:clear:images && npm run docker:clear:containers",
-    "docker:run": "docker build -t the-form-server . && docker run --env-file .env.production -dp 127.0.0.1:8081:8081 the-form-server",
-    "docker:build": "npm run docker:clear && npm run docker:run"
+    "docker": "npm run docker:stop && npm run docker:rm && npm run docker:build && npm run docker:run",
+    "prisma:push": "npx prisma db push",
+    "prisma:migrate:dev": "npx prisma migrate dev --name migrate",
+    "prisma:migrate:deploy": "npx prisma migrate deploy",
+    "docker:stop": "docker stop the-form-server || true",
+    "docker:rm": "docker rm the-form-server || true",
+    "docker:build": "docker build -t the-form-server .",
+    "docker:run": "docker run --name the-form-server --env-file .env.production -dp 127.0.0.1:8081:8081 the-form-server"
   },
   "repository": {
     "type": "git",
