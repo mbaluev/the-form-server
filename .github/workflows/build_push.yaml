@@ -4,9 +4,9 @@ on:
     branches:
       - feature/local-auth
 env:
-  DOCKERHUB_USERNAME: ${{ env.DOCKERHUB_USERNAME }}
-  DOCKERHUB_TOKEN: ${{ env.DOCKERHUB_TOKEN }}
-  DOCKERHUB_TAG: ${{ env.DOCKERHUB_TAG }}
+  DOCKERHUB_USERNAME: $DOCKERHUB_USERNAME
+  DOCKERHUB_TOKEN: $DOCKERHUB_TOKEN
+  DOCKERHUB_TAG: $DOCKERHUB_TAG
 jobs:
   build:
     runs-on: ubuntu-latest
