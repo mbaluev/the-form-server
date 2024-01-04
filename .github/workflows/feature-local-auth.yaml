@@ -15,13 +15,13 @@ jobs:
       - name: Create env file
         run: |
           touch .env
-          echo TOKEN_SECRET=946cbae2-f6cd-4c35-8ac9-26b3918a69a4 >> .env
-          echo TOKEN_EXPIRY=60*60*24*30 >> .env
-          echo SESSION_SECRET=774e23fb-ccb2-4f04-aeda-c4e860dc0faf >> .env
-          echo COOKIE_SECRET=4cb79e38-846e-46f0-89da-7377c29bec46 >> .env
-          echo WHITELIST_DOMAINS=http://localhost:3002,http://localhost >> .env
-          echo DATABASE_URL=postgresql://sa:@localhost:5432/the-form >> .env
-          echo PORT=8081 >> .env
+          echo TOKEN_SECRET=${{ secrets.TOKEN_SECRET }} >> .env
+          echo TOKEN_EXPIRY=${{ vars.TOKEN_EXPIRY }} >> .env
+          echo SESSION_SECRET=${{ secrets.SESSION_SECRET }} >> .env
+          echo COOKIE_SECRET=${{ secrets.COOKIE_SECRET }} >> .env
+          echo WHITELIST_DOMAINS=${{ vars.WHITELIST_DOMAINS }} >> .env
+          echo DATABASE_URL=${{ secrets.DATABASE_URL }} >> .env
+          echo PORT=${{ vars.PORT }} >> .env
           cat .env
       - name: Login to DockerHub
         uses: docker/login-action@v1
