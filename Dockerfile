@@ -9,7 +9,6 @@ ENV NODE_ENV production
 COPY package.json yarn.lock .env ./
 COPY prisma ./prisma/
 COPY src ./src/
-RUN touch .env
 
 RUN yarn
 
