@@ -12,7 +12,7 @@
     "docker:stop": "docker stop the-form-server || true",
     "docker:rm": "docker rm the-form-server || true",
     "docker:build": "docker build -t the-form-server .",
-    "docker:run": "docker run --name the-form-server --env-file .env.production -dp 127.0.0.1:8081:8081 the-form-server"
+    "docker:run": "docker run --name the-form-server --env-file .env.production.local -dp 127.0.0.1:8081:8081 the-form-server"
   },
   "repository": {
     "type": "git",
