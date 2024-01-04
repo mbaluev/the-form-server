@@ -6,7 +6,7 @@ WORKDIR /usr/src/app
 
 ENV NODE_ENV production
 
-COPY package.json yarn.lock ./
+COPY package.json yarn.lock .env.development ./
 COPY prisma ./prisma/
 COPY src ./src/
 
