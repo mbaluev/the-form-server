@@ -34,4 +34,4 @@ jobs:
           context: ./
           push: true
           dockerfile: ./Dockerfile
-          tags: mbaluev/the-form-client:${{ vars.DOCKERHUB_TAG }}
+          tags: mbaluev/the-form-server:${{ vars.DOCKERHUB_TAG }}
