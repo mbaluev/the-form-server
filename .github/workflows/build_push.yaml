@@ -3,14 +3,11 @@ on:
   push:
     branches:
       - feature/local-auth
-env:
-  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-  DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-  DOCKERHUB_TAG: ${{ vars.DOCKERHUB_TAG }}
 jobs:
   display-variables:
     name: ${{ vars.DOCKERHUB_TAG }}
     runs-on: ubuntu-latest
+    environment: development
     steps:
       - name: Use variables
         run: |
