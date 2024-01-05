@@ -57,7 +57,7 @@ app.get("/", (req, res) => {
   res.json({
     success: true,
     v: '1.1',
-    whitelist: process.env.WHITELIST_DOMAINS,
+    whitelist: process.env.WHITELIST_DOMAINS
   })
 })
 
