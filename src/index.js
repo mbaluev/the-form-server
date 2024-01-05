@@ -15,10 +15,12 @@ app.use(bodyParser.json())
 app.use(cookieParser(process.env.COOKIE_SECRET))
 
 // add the client URL to the CORS policy
+let _origin;
 const cors = require("cors")
 const whitelist = process.env.WHITELIST_DOMAINS ? process.env.WHITELIST_DOMAINS.split(",") : []
 const corsOptions = {
   origin: function (origin, callback) {
+    _origin = origin;
     if (!origin || whitelist.indexOf(origin) !== -1) {
       callback(null, true)
     } else {
@@ -54,7 +56,12 @@ app.use(favicon(path.join(__dirname, 'public', 'favicon', 'favicon.ico')));
 
 // main route
 app.get("/", (req, res) => {
-  res.json({ success: true, v: '1.1', whitelist: process.env.WHITELIST_DOMAINS })
+  res.json({
+    success: true,
+    v: '1.1',
+    whitelist: process.env.WHITELIST_DOMAINS,
+    _origin
+  })
 })
 
 // old routes
