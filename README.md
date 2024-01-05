@@ -15,3 +15,4 @@
 3. docker:rm: `docker rm the-form-server || true`
 4. docker:build: `docker build -t the-form-server .`
 5. docker:run: `docker run --name the-form-server --env-file .env.production -dp 127.0.0.1:8081:8081 the-form-server`
+6. 
