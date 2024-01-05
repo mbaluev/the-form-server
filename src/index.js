@@ -54,7 +54,11 @@ app.use(favicon(path.join(__dirname, 'public', 'favicon', 'favicon.ico')));
 
 // main route
 app.get("/", (req, res) => {
-  res.json({ success: true, v: '1.1' })
+  res.json({
+    success: true,
+    v: '1.1',
+    whitelist: process.env.WHITELIST_DOMAINS,
+  })
 })
 
 // old routes
