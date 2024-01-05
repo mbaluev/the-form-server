@@ -18,13 +18,7 @@ app.use(cookieParser(process.env.COOKIE_SECRET))
 const cors = require("cors")
 const whitelist = process.env.WHITELIST_DOMAINS ? process.env.WHITELIST_DOMAINS.split(",") : []
 const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin || whitelist.indexOf(origin) !== -1) {
-      callback(null, true)
-    } else {
-      callback(new Error("Not allowed by CORS"))
-    }
-  },
+  origin: whitelist,
   credentials: true,
 }
 app.use(cors(corsOptions))
@@ -57,7 +51,7 @@ app.get("/", (req, res) => {
   res.json({
     success: true,
     v: '1.1',
-    whitelist: process.env.WHITELIST_DOMAINS,
+    whitelist,
   })
 })
 
