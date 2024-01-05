@@ -15,4 +15,3 @@ RUN yarn
 EXPOSE 8081
 
 CMD ["npm", "run", "start"]
-#CMD ["npm", "run", "create"]

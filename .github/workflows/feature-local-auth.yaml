@@ -1,0 +1,37 @@
+name: Build on DockerHub
+on:
+  push:
+    branches:
+      - feature/local-auth
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: development
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Create env file
+        run: |
+          touch .env
+          echo TOKEN_SECRET=${{ secrets.TOKEN_SECRET }} >> .env
+          echo TOKEN_EXPIRY=${{ vars.TOKEN_EXPIRY }} >> .env
+          echo SESSION_SECRET=${{ secrets.SESSION_SECRET }} >> .env
+          echo COOKIE_SECRET=${{ secrets.COOKIE_SECRET }} >> .env
+          echo WHITELIST_DOMAINS=${{ vars.WHITELIST_DOMAINS }} >> .env
+          echo DATABASE_URL=${{ secrets.DATABASE_URL }} >> .env
+          echo PORT=${{ vars.PORT }} >> .env
+          cat .env
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: ./
+          push: true
+          dockerfile: ./Dockerfile
+          tags: mbaluev/the-form-server:${{ vars.DOCKERHUB_TAG }}

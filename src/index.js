@@ -16,7 +16,7 @@ app.use(cookieParser(process.env.COOKIE_SECRET))
 
 // add the client URL to the CORS policy
 const cors = require("cors")
-const whitelist = process.env.WHITELISTED_DOMAINS ? process.env.WHITELISTED_DOMAINS.split(",") : []
+const whitelist = process.env.WHITELIST_DOMAINS ? process.env.WHITELIST_DOMAINS.split(",") : []
 const corsOptions = {
   origin: function (origin, callback) {
     if (!origin || whitelist.indexOf(origin) !== -1) {
@@ -47,9 +47,14 @@ app.use(session({
 app.use(passport.initialize())
 app.use(passport.session())
 
+// favicon
+const favicon = require('serve-favicon');
+const path = require('path');
+app.use(favicon(path.join(__dirname, 'public', 'favicon', 'favicon.ico')));
+
 // main route
 app.get("/", (req, res) => {
-  res.json({ success: true })
+  res.json({ success: true, v: '1.1' })
 })
 
 // old routes
