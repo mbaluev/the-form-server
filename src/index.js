@@ -59,7 +59,6 @@ app.get("/", (req, res) => {
     v: '1.1',
     whitelist: process.env.WHITELIST_DOMAINS,
     whitelistArr: process.env.WHITELIST_DOMAINS.split(","),
-    whitelistVar: whitelist
   })
 })
 
