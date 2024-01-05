@@ -63,4 +63,4 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@ec2-16-171-16-109.eu-north-1.compute.amazonaws.com 'sudo docker rm the-form-server || true'
       - name: Run new container
         run: |
-          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@ec2-16-171-16-109.eu-north-1.compute.amazonaws.com 'sudo docker run -d --name the-form-server -p 80:3000 mbaluev/the-form-server:latest'
+          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@ec2-16-171-16-109.eu-north-1.compute.amazonaws.com 'sudo docker run -d --name the-form-server -p 80:8081 mbaluev/the-form-server:latest'
