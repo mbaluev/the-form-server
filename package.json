@@ -41,6 +41,7 @@
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
     "prisma": "^4.14.1",
+    "serve-favicon": "^2.5.0",
     "uuid": "^9.0.0"
   }
 }
