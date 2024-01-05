@@ -50,11 +50,11 @@ app.use(passport.session())
 // favicon
 const favicon = require('serve-favicon');
 const path = require('path');
-app.use(favicon(path.join(__dirname,'public','favicon','favicon.ico')));
+app.use(favicon(path.join(__dirname, 'public', 'favicon', 'favicon.ico')));
 
 // main route
 app.get("/", (req, res) => {
-  res.json({ success: true, v: '1.0' })
+  res.json({ success: true, v: '1.1' })
 })
 
 // old routes
