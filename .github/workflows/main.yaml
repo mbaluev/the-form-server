@@ -54,13 +54,13 @@ jobs:
         run: |
           echo "${{ env.AWS_PRIVATE_KEY }}" > key.pem
           chmod 600 key.pem
-      - name: Pull Docker image
-        run: |
-          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@ec2-16-171-16-109.eu-north-1.compute.amazonaws.com 'sudo docker pull mbaluev/the-form-server:latest'
       - name: Stop running container
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@ec2-16-171-16-109.eu-north-1.compute.amazonaws.com 'sudo docker stop the-form-server || true'
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@ec2-16-171-16-109.eu-north-1.compute.amazonaws.com 'sudo docker rm the-form-server || true && docker image rm mbaluev/the-form-server:latest || true'
+      - name: Pull Docker image
+        run: |
+          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@ec2-16-171-16-109.eu-north-1.compute.amazonaws.com 'sudo docker pull mbaluev/the-form-server:latest'
       - name: Run new container
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@ec2-16-171-16-109.eu-north-1.compute.amazonaws.com 'sudo docker run -d --name the-form-server -p 80:8081 mbaluev/the-form-server:latest'
