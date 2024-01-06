@@ -60,7 +60,7 @@ jobs:
       - name: Stop running container
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@ec2-51-20-185-40.eu-north-1.compute.amazonaws.com 'sudo docker stop the-form-server || true'
-          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@ec2-51-20-185-40.eu-north-1.compute.amazonaws.com 'sudo docker rm the-form-server'
+          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@ec2-51-20-185-40.eu-north-1.compute.amazonaws.com 'sudo docker rm the-form-server || true'
       - name: Run new container
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@ec2-51-20-185-40.eu-north-1.compute.amazonaws.com 'sudo docker run -d --name the-form-server -p 80:8081 mbaluev/the-form-server:latest'
