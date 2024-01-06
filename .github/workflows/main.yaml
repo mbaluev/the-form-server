@@ -56,8 +56,8 @@ jobs:
           chmod 600 key.pem
       - name: Stop running container
         run: |
-          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@ec2-51-20-185-40.eu-north-1.compute.amazonaws.com 'sudo docker rm $(sudo docker ps -qa)'
-          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@ec2-51-20-185-40.eu-north-1.compute.amazonaws.com 'sudo docker rmi -f $(sudo docker images -aq)'
+          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@ec2-51-20-185-40.eu-north-1.compute.amazonaws.com 'sudo docker rm $(sudo docker ps -aq) || true'
+          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@ec2-51-20-185-40.eu-north-1.compute.amazonaws.com 'sudo docker rmi $(sudo docker images -aq) || true'
       - name: Pull Docker image
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@ec2-51-20-185-40.eu-north-1.compute.amazonaws.com 'sudo docker pull mbaluev/the-form-server:localhost'
