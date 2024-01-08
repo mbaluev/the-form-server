@@ -1,5 +1,6 @@
 name: Build on DockerHub and Deploy to AWS
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
