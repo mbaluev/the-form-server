@@ -16,9 +16,9 @@ app.use(cookieParser(process.env.COOKIE_SECRET))
 
 // add the client URL to the CORS policy
 const cors = require("cors")
-const whitelist = process.env.WHITELIST_DOMAINS?.split(",");
 const corsOptions = {
   origin: function (origin, callback) {
+    const whitelist = process.env.WHITELIST_DOMAINS?.split(",") || [];
     if (!origin || whitelist.indexOf(origin) !== -1) {
       callback(null, true)
     } else {
@@ -86,5 +86,5 @@ if (!fs.existsSync(dir)) fs.mkdirSync(dir);
 const server = app.listen(process.env.PORT || 8081, function () {
   const port = server.address().port;
   console.log("App started at port:", port);
-  console.log('Whitelist:', whitelist);
+  console.log('Whitelist:', process.env.WHITELIST_DOMAINS);
 })
