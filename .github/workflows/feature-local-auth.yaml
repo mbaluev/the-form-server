@@ -35,4 +35,4 @@ jobs:
           context: ./
           push: true
           dockerfile: ./Dockerfile
-          tags: mbaluev/the-form-server:latest
+          tags: mbaluev/the-form-server:localhost
